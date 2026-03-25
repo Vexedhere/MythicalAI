@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mythical AI | Pro Portal</title>
+    <title>Mythical AI | Network Archives</title>
+    <meta name="referrer" content="no-referrer-when-downgrade">
     <style>
         :root {
             --bg: #050507; --card: #111114; --accent: #d4af37;
@@ -13,7 +14,7 @@
 
         body, html { margin: 0; padding: 0; height: 100%; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overflow: hidden; }
 
-        /* --- CENTERED LOGIN --- */
+        /* --- AUTH SCREEN --- */
         #auth-container { position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; z-index: 100; background: var(--bg); }
         .auth-card { width: 90%; max-width: 400px; background: var(--card); padding: 40px; border-radius: 28px; border: 1px solid rgba(212,175,55,0.15); text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.8); }
         .logo-circle { width: 65px; height: 65px; background: var(--grad); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; color: black; font-weight: 800; font-size: 24px; }
@@ -30,7 +31,7 @@
         .user-msg { align-self: flex-end; background: var(--grad); color: white; border-bottom-right-radius: 4px; }
         .bot-msg { align-self: flex-start; background: #1c1c21; border: 1px solid #333; border-bottom-left-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
 
-        /* --- CENTERED FLOATING INPUT --- */
+        /* --- FLOATING INPUT --- */
         .input-wrapper { position: absolute; bottom: 35px; left: 0; right: 0; display: flex; justify-content: center; padding: 0 25px; pointer-events: none; }
         .center-input-container { width: 100%; max-width: 650px; background: rgba(28, 28, 33, 0.95); backdrop-filter: blur(10px); border: 1px solid #444; border-radius: 50px; display: flex; align-items: center; padding: 8px 12px; pointer-events: auto; box-shadow: 0 15px 40px rgba(0,0,0,0.6); }
         
@@ -49,7 +50,7 @@
             <div class="logo-circle">M</div>
             <h2 style="margin-bottom: 8px; letter-spacing: 1px;">Mythical Studios</h2>
             <p style="font-size: 12px; color: var(--text-dim); margin-bottom: 30px;">Access the Network Archives</p>
-            <input type="email" id="email-field" placeholder="Gmail Address (e.g. uchethan@gmail.com)">
+            <input type="email" id="email-field" placeholder="Gmail Address">
             <input type="password" id="pass-field" placeholder="Security Token">
             <button id="login-trigger" style="width:100%; background:var(--grad); border:none; padding:16px; border-radius:14px; color:white; font-weight:bold; cursor:pointer; font-size:16px;">SIGN IN</button>
         </div>
@@ -68,120 +69,140 @@
             </div>
         </div>
     </div>
-<script>
-    // --- 1. CONFIGURATION ---
-    // Using your provided key
-    const API_KEY = "AIzaSyAwu8KNmHkIsUbyAFB4-Gg8CMwh2MickAo"; 
-    const MODEL = "gemini-1.5-flash"; 
-    
-    let chatHistory = JSON.parse(localStorage.getItem('mythical_chats')) || []; 
-    let userName = localStorage.getItem('mythical_user') || "";
 
-    // DOM Elements
-    const authBox = document.getElementById('auth-container');
-    const chatBox = document.getElementById('chat-interface');
-    const chatWindow = document.getElementById('chat-window');
-    const chatInput = document.getElementById('chat-query');
-    const loginBtn = document.getElementById('login-trigger');
-    const sendBtn = document.getElementById('send-trigger');
-
-    // --- 2. STARTUP CHECK ---
-    window.onload = () => {
-        if (userName) {
-            authBox.style.display = 'none';
-            chatBox.style.display = 'flex';
-            renderHistory();
-        }
-    };
-
-    // --- 3. LOGIN LOGIC (FIXED) ---
-    loginBtn.onclick = () => {
-        const email = document.getElementById('email-field').value.trim();
+    <script>
+        // --- 1. CONFIGURATION ---
+        const API_KEY = "AIzaSyBcvjbmRn7Hg3h2rpE4iZBeL0gI6_kzfWM"; 
+        let activeModel = "models/gemini-1.5-flash"; // Fallback
         
-        // Simple check: Just make sure it looks like an email
-        if (email.includes('@') && email.includes('.')) {
-            userName = email.split('@')[0];
-            localStorage.setItem('mythical_user', userName);
-            
-            authBox.style.display = 'none';
-            chatBox.style.display = 'flex';
-            
-            if (chatHistory.length === 0) {
-                addMessageUI(`Greetings, ${userName}. The archives are open.`, false);
-            } else {
+        const SYSTEM_KNOWLEDGE = `
+            You are the Official AI of Mythical Studios. 
+            Store: https://store.mythicalstudios.online
+            Wiki: https://mythicalstudios.info
+            Minecraft IP: mc.mythicalstudios.online
+            Ranks: Squire, Knight, Hero, Legend, Mythic, and God.
+            Products: Rank upgrades and Mythical Coin packs (1,000 to 40,000 coins).
+            Be helpful, witty, and always link to the store when ranks are mentioned.
+        `;
+
+        let chatHistory = JSON.parse(localStorage.getItem('mythical_chats')) || []; 
+        let userName = localStorage.getItem('mythical_user') || "";
+
+        const authBox = document.getElementById('auth-container');
+        const chatBox = document.getElementById('chat-interface');
+        const chatWindow = document.getElementById('chat-window');
+        const chatInput = document.getElementById('chat-query');
+
+        // --- 2. AUTO-DISCOVERY (Fixes "Model Not Found") ---
+        async function connectToArchives() {
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${API_KEY}`);
+                const data = await res.json();
+                const found = data.models.find(m => m.supportedGenerationMethods.includes("generateContent") && m.name.includes("gemini-1.5-flash"));
+                if (found) activeModel = found.name;
+                console.log("Archives linked via:", activeModel);
+            } catch (e) { console.error("Archive sync error", e); }
+        }
+        connectToArchives();
+
+        window.onload = () => {
+            if (userName) {
+                authBox.style.display = 'none';
+                chatBox.style.display = 'flex';
                 renderHistory();
             }
-        } else {
-            alert("Please enter a valid Gmail address.");
-        }
-    };
+        };
 
-    // --- 4. CHAT LOGIC ---
-    function addMessageUI(text, isUser) {
-        const div = document.createElement('div');
-        div.className = `msg ${isUser ? 'user-msg' : 'bot-msg'}`;
-        div.innerText = text;
-        chatWindow.appendChild(div);
-        chatWindow.scrollTop = chatWindow.scrollHeight;
-        return div;
-    }
-
-    function renderHistory() {
-        chatWindow.innerHTML = "";
-        chatHistory.forEach(msg => {
-            addMessageUI(msg.parts[0].text, msg.role === "user");
-        });
-    }
-
-    async function askAI() {
-        const query = chatInput.value.trim();
-        if (!query) return;
-
-        addMessageUI(query, true);
-        chatInput.value = '';
-        
-        chatHistory.push({ role: "user", parts: [{ text: query }] });
-        const loading = addMessageUI("...", false);
-
-        try {
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ contents: chatHistory })
-            });
-            
-            const data = await res.json();
-            
-            if (data.error) {
-                loading.innerText = "Connection error. Check Google Cloud restrictions.";
-                return;
+        // Login Logic
+        document.getElementById('login-trigger').onclick = () => {
+            const email = document.getElementById('email-field').value.trim();
+            if (email.includes('@') && email.includes('.')) {
+                userName = email.split('@')[0];
+                localStorage.setItem('mythical_user', userName);
+                authBox.style.display = 'none';
+                chatBox.style.display = 'flex';
+                
+                if (chatHistory.length === 0) {
+                    chatHistory.push({ role: "user", parts: [{ text: SYSTEM_KNOWLEDGE }] });
+                    chatHistory.push({ role: "model", parts: [{ text: "Network Sync Complete." }] });
+                    renderHistory();
+                } else {
+                    renderHistory();
+                }
+            } else {
+                alert("Please enter a valid email.");
             }
+        };
 
-            const aiText = data.candidates[0].content.parts[0].text;
-            loading.innerText = aiText;
+        // Chat Engine
+        async function askAI() {
+            const query = chatInput.value.trim();
+            if (!query) return;
 
-            chatHistory.push({ role: "model", parts: [{ text: aiText }] });
-            localStorage.setItem('mythical_chats', JSON.stringify(chatHistory));
+            addMessageUI(query, true);
+            chatInput.value = '';
+            chatHistory.push({ role: "user", parts: [{ text: query }] });
 
-        } catch (e) {
-            loading.innerText = "Archives unreachable. Try again in a moment.";
+            const loading = addMessageUI("Analyzing...", false);
+
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${activeModel}:generateContent?key=${API_KEY}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ contents: chatHistory })
+                });
+                
+                const data = await res.json();
+                
+                if (data.error) {
+                    loading.innerText = "Access Denied. Ensure your new API key has no restrictions in AI Studio.";
+                    return;
+                }
+
+                const aiText = data.candidates[0].content.parts[0].text;
+                loading.innerText = aiText;
+
+                chatHistory.push({ role: "model", parts: [{ text: aiText }] });
+                localStorage.setItem('mythical_chats', JSON.stringify(chatHistory));
+
+            } catch (e) {
+                loading.innerText = "Connection lost. Please refresh the page.";
+            }
         }
-    }
 
-    // --- 5. ENTER KEY & BUTTON FIX ---
-    sendBtn.onclick = askAI;
-
-    chatInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            askAI();
+        function addMessageUI(text, isUser) {
+            const div = document.createElement('div');
+            div.className = `msg ${isUser ? 'user-msg' : 'bot-msg'}`;
+            div.innerText = text;
+            chatWindow.appendChild(div);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+            return div;
         }
-    });
 
-    function clearSession() {
-        localStorage.clear();
-        location.reload();
-    }
-</script>
+        function renderHistory() {
+            chatWindow.innerHTML = "";
+            // Skip the 2 hidden system messages
+            const visible = chatHistory.slice(2);
+            if (visible.length === 0) {
+                addMessageUI(`Greetings, ${userName}. How can the archives serve you?`, false);
+            }
+            visible.forEach(msg => {
+                addMessageUI(msg.parts[0].text, msg.role === "user");
+            });
+        }
+
+        document.getElementById('send-trigger').onclick = askAI;
+        chatInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                askAI();
+            }
+        });
+
+        function clearSession() {
+            localStorage.clear();
+            location.reload();
+        }
+    </script>
 </body>
 </html>
