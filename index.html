@@ -3,207 +3,212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mythical AI | Network Archives</title>
-  <meta name="referrer" content="no-referrer-when-downgrade">  
-  <meta name="referrer" content="no-referrer-when-downgrade">
+    <title>Mythical AI | User Portal</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
     <style>
         :root {
-            --bg: #050507; --card: #111114; --accent: #d4af37;
-            --input-bg: #1c1c21; --text: #ffffff; --text-dim: #a0a0a5;
+            --bg: #0b0b0e; --sidebar-bg: #050507; --card: #16161a;
+            --accent: #d4af37; --text: #ffffff; --text-dim: #9ca3af;
             --grad: linear-gradient(135deg, #d4af37 0%, #8a2be2 100%);
         }
+        * { box-sizing: border-box; transition: all 0.2s ease; }
+        body, html { margin: 0; padding: 0; height: 100%; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overflow: hidden; display: flex; }
 
-        body, html { margin: 0; padding: 0; height: 100%; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overflow: hidden; }
+        /* --- SIDEBAR --- */
+        #sidebar { width: 280px; background: var(--sidebar-bg); border-right: 1px solid #222; display: flex; flex-direction: column; padding: 20px; z-index: 100; position: absolute; height: 100%; left: 0; }
+        #sidebar.closed { left: -280px; }
+        .new-chat-btn { background: #1f1f23; border: 1px solid #333; color: white; padding: 12px; border-radius: 12px; cursor: pointer; margin-bottom: 25px; width: 100%; font-weight: 600; }
+        .history-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .history-item { padding: 12px; border-radius: 10px; font-size: 14px; color: var(--text-dim); cursor: pointer; background: rgba(255,255,255,0.02); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .history-item.active { background: rgba(212, 175, 55, 0.1); color: var(--accent); border: 1px solid rgba(212,175,55,0.3); }
 
-        /* --- AUTH SCREEN --- */
-        #auth-container { position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; z-index: 100; background: var(--bg); }
-        .auth-card { width: 90%; max-width: 400px; background: var(--card); padding: 40px; border-radius: 28px; border: 1px solid rgba(212,175,55,0.15); text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.8); }
-        .logo-circle { width: 65px; height: 65px; background: var(--grad); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; color: black; font-weight: 800; font-size: 24px; }
-        
-        /* --- CHAT INTERFACE --- */
-        #chat-interface { display: none; width: 100%; height: 100vh; flex-direction: column; position: relative; }
-        header { padding: 18px 25px; border-bottom: 1px solid #222; display: flex; align-items: center; justify-content: space-between; background: var(--card); }
-        
-        #chat-window { flex: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; gap: 20px; padding-bottom: 140px; scroll-behavior: smooth; }
+        /* --- MAIN --- */
+        #main-content { flex: 1; display: flex; flex-direction: column; width: 100%; height: 100%; margin-left: 280px; transition: 0.3s; }
+        #main-content.full { margin-left: 0; }
+        header { padding: 15px 25px; border-bottom: 1px solid #222; display: flex; align-items: center; justify-content: space-between; background: var(--bg); }
+        #chat-window { flex: 1; overflow-y: auto; padding: 20px 8%; display: flex; flex-direction: column; gap: 25px; }
+        .msg { max-width: 85%; padding: 16px 20px; border-radius: 18px; font-size: 15px; line-height: 1.6; }
+        .user-msg { align-self: flex-end; background: var(--grad); color: #000; font-weight: 500; border-bottom-right-radius: 2px; }
+        .bot-msg { align-self: flex-start; background: #1c1c21; border: 1px solid #333; border-bottom-left-radius: 2px; }
 
-        .msg { max-width: 80%; padding: 15px 20px; border-radius: 22px; line-height: 1.6; font-size: 15px; position: relative; animation: popIn 0.3s ease; word-wrap: break-word; }
-        @keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        
-        .user-msg { align-self: flex-end; background: var(--grad); color: white; border-bottom-right-radius: 4px; }
-        .bot-msg { align-self: flex-start; background: #1c1c21; border: 1px solid #333; border-bottom-left-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        /* --- INPUT --- */
+        .input-container { padding: 20px 8% 40px; }
+        .input-box { background: #16161a; border: 1px solid #333; border-radius: 16px; display: flex; align-items: center; padding: 12px 18px; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .chat-input { flex: 1; background: transparent; border: none; color: white; outline: none; font-size: 16px; }
 
-        /* --- FLOATING INPUT --- */
-        .input-wrapper { position: absolute; bottom: 35px; left: 0; right: 0; display: flex; justify-content: center; padding: 0 25px; pointer-events: none; }
-        .center-input-container { width: 100%; max-width: 650px; background: rgba(28, 28, 33, 0.95); backdrop-filter: blur(10px); border: 1px solid #444; border-radius: 50px; display: flex; align-items: center; padding: 8px 12px; pointer-events: auto; box-shadow: 0 15px 40px rgba(0,0,0,0.6); }
-        
-        .chat-input { flex: 1; background: transparent; border: none; padding: 12px 18px; color: white; font-size: 16px; outline: none; }
-        .send-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--accent); border: none; font-size: 18px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; }
-        .send-btn:hover { transform: scale(1.1); filter: brightness(1.1); }
-
-        input[type="email"], input[type="password"] { width: 100%; box-sizing: border-box; background:#1c1c21; border:1px solid #333; padding:15px; border-radius:14px; color:white; margin-bottom:15px; outline:none; transition: 0.3s; }
-        input:focus { border-color: var(--accent); }
+        /* --- AUTH OVERLAY --- */
+        #auth-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .login-card { width: 380px; background: var(--card); padding: 45px; border-radius: 24px; text-align: center; border: 1px solid #333; }
+        .google-btn { background: white; color: black; border: none; padding: 14px; border-radius: 12px; font-weight: 700; width: 100%; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 20px; }
     </style>
 </head>
 <body>
 
-    <div id="auth-container">
-        <div class="auth-card">
-            <div class="logo-circle">M</div>
-            <h2 style="margin-bottom: 8px; letter-spacing: 1px;">Mythical Studios</h2>
-            <p style="font-size: 12px; color: var(--text-dim); margin-bottom: 30px;">Access the Network Archives</p>
-            <input type="email" id="email-field" placeholder="Gmail Address">
-            <input type="password" id="pass-field" placeholder="Security Token">
-            <button id="login-trigger" style="width:100%; background:var(--grad); border:none; padding:16px; border-radius:14px; color:white; font-weight:bold; cursor:pointer; font-size:16px;">SIGN IN</button>
+    <div id="sidebar">
+        <div style="font-weight: 900; color: var(--accent); margin-bottom: 30px; font-size: 22px;">MYTHICAL</div>
+        <button class="new-chat-btn" onclick="startNewChat()">+ New Chat</button>
+        <div class="history-list" id="history-list"></div>
+        <button onclick="logout()" style="margin-top:20px; background:transparent; border:none; color: #444; cursor: pointer; font-size: 12px;">Sign Out</button>
+    </div>
+
+    <div id="auth-overlay">
+        <div class="login-card">
+            <div style="font-size: 40px; margin-bottom: 10px;">🛡️</div>
+            <h2>Mythical Portal</h2>
+            <p style="color:var(--text-dim); font-size: 13px;">Official Google Login for Users</p>
+            <button class="google-btn" onclick="loginWithGoogle()">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_Logo.svg" width="20"> Continue with Google
+            </button>
         </div>
     </div>
 
-    <div id="chat-interface">
+    <div id="main-content">
         <header>
-            <div style="font-weight: 800; color: var(--accent); letter-spacing: 2px; font-size: 14px;">MYTHICAL AI</div>
-            <button onclick="clearSession()" style="background:transparent; border:1px solid #444; color:var(--text-dim); padding:6px 12px; border-radius:10px; font-size:11px; cursor:pointer;">LOGOUT</button>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button onclick="toggleSidebar()" style="background:transparent; border:none; color:white; font-size:24px; cursor:pointer;">☰</button>
+                <div id="active-title" style="font-weight: 600;">Chat Archives</div>
+            </div>
+            <div id="user-info" style="font-size: 12px; color: var(--accent);"></div>
         </header>
         <div id="chat-window"></div>
-        <div class="input-wrapper">
-            <div class="center-input-container">
-                <input type="text" id="chat-query" class="chat-input" placeholder="Query the archives..." autocomplete="off">
-                <button id="send-trigger" class="send-btn">➔</button>
+        <div class="input-container">
+            <div class="input-box">
+                <input type="text" id="user-input" class="chat-input" placeholder="Message Mythical Archives..." autocomplete="off">
+                <button onclick="sendMessage()" style="background:var(--accent); border:none; padding:10px 18px; border-radius:10px; cursor:pointer; font-weight:bold;">➔</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- 1. CONFIGURATION ---
-        const API_KEY = "AIzaSyBcvjbmRn7Hg3h2rpE4iZBeL0gI6_kzfWM"; 
-        let activeModel = "models/gemini-1.5-flash"; // Fallback
+        // --- 1. FIREBASE CONFIG (Using YOUR Keys) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDk2Hylmbu4WIWtTn0JYPEmLYXGaad5um8",
+            authDomain: "mythical-ai.firebaseapp.com",
+            projectId: "mythical-ai",
+            storageBucket: "mythical-ai.firebasestorage.app",
+            messagingSenderId: "405366066284",
+            appId: "1:405366066284:web:c7cbd9ce2ce7809db6dc49"
+        };
         
-        const SYSTEM_KNOWLEDGE = `
-            You are the Official AI of Mythical Studios. 
-            Store: https://store.mythicalstudios.online
-            Wiki: https://mythicalstudios.info
-            Minecraft IP: mc.mythicalstudios.online
-            Ranks: Squire, Knight, Hero, Legend, Mythic, and God.
-            Products: Rank upgrades and Mythical Coin packs (1,000 to 40,000 coins).
-            Be helpful, witty, and always link to the store when ranks are mentioned.
-        `;
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
 
-        let chatHistory = JSON.parse(localStorage.getItem('mythical_chats')) || []; 
-        let userName = localStorage.getItem('mythical_user') || "";
+        // --- 2. GROQ CONFIG ---
+        const GROQ_KEY = "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";
+        const ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
+        
+        const SYSTEM = "You are the Mythical Network Assistant. Only discuss the Minecraft server (mc.mythicalstudios.online). No YouTubers. Short answers.";
 
-        const authBox = document.getElementById('auth-container');
-        const chatBox = document.getElementById('chat-interface');
-        const chatWindow = document.getElementById('chat-window');
-        const chatInput = document.getElementById('chat-query');
+        let currentUser = null;
+        let activeChatId = "";
+        let currentMessages = [];
 
-        // --- 2. AUTO-DISCOVERY (Fixes "Model Not Found") ---
-        async function connectToArchives() {
-            try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${API_KEY}`);
-                const data = await res.json();
-                const found = data.models.find(m => m.supportedGenerationMethods.includes("generateContent") && m.name.includes("gemini-1.5-flash"));
-                if (found) activeModel = found.name;
-                console.log("Archives linked via:", activeModel);
-            } catch (e) { console.error("Archive sync error", e); }
+        // --- AUTH LOGIC ---
+        function loginWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).catch(err => alert("Login Error: " + err.message));
         }
-        connectToArchives();
 
-        window.onload = () => {
-            if (userName) {
-                authBox.style.display = 'none';
-                chatBox.style.display = 'flex';
-                renderHistory();
-            }
-        };
-
-        // Login Logic
-        document.getElementById('login-trigger').onclick = () => {
-            const email = document.getElementById('email-field').value.trim();
-            if (email.includes('@') && email.includes('.')) {
-                userName = email.split('@')[0];
-                localStorage.setItem('mythical_user', userName);
-                authBox.style.display = 'none';
-                chatBox.style.display = 'flex';
-                
-                if (chatHistory.length === 0) {
-                    chatHistory.push({ role: "user", parts: [{ text: SYSTEM_KNOWLEDGE }] });
-                    chatHistory.push({ role: "model", parts: [{ text: "Network Sync Complete." }] });
-                    renderHistory();
-                } else {
-                    renderHistory();
-                }
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('auth-overlay').style.display = 'none';
+                document.getElementById('user-info').innerText = user.displayName;
+                renderHistoryList();
+                startNewChat();
             } else {
-                alert("Please enter a valid email.");
-            }
-        };
-
-        // Chat Engine
-        async function askAI() {
-            const query = chatInput.value.trim();
-            if (!query) return;
-
-            addMessageUI(query, true);
-            chatInput.value = '';
-            chatHistory.push({ role: "user", parts: [{ text: query }] });
-
-            const loading = addMessageUI("Analyzing...", false);
-
-            try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${activeModel}:generateContent?key=${API_KEY}`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ contents: chatHistory })
-                });
-                
-                const data = await res.json();
-                
-                if (data.error) {
-                    loading.innerText = "Access Denied. Ensure your new API key has no restrictions in AI Studio.";
-                    return;
-                }
-
-                const aiText = data.candidates[0].content.parts[0].text;
-                loading.innerText = aiText;
-
-                chatHistory.push({ role: "model", parts: [{ text: aiText }] });
-                localStorage.setItem('mythical_chats', JSON.stringify(chatHistory));
-
-            } catch (e) {
-                loading.innerText = "Connection lost. Please refresh the page.";
-            }
-        }
-
-        function addMessageUI(text, isUser) {
-            const div = document.createElement('div');
-            div.className = `msg ${isUser ? 'user-msg' : 'bot-msg'}`;
-            div.innerText = text;
-            chatWindow.appendChild(div);
-            chatWindow.scrollTop = chatWindow.scrollHeight;
-            return div;
-        }
-
-        function renderHistory() {
-            chatWindow.innerHTML = "";
-            // Skip the 2 hidden system messages
-            const visible = chatHistory.slice(2);
-            if (visible.length === 0) {
-                addMessageUI(`Greetings, ${userName}. How can the archives serve you?`, false);
-            }
-            visible.forEach(msg => {
-                addMessageUI(msg.parts[0].text, msg.role === "user");
-            });
-        }
-
-        document.getElementById('send-trigger').onclick = askAI;
-        chatInput.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                askAI();
+                document.getElementById('auth-overlay').style.display = 'flex';
             }
         });
 
-        function clearSession() {
-            localStorage.clear();
-            location.reload();
+        function logout() { auth.signOut().then(() => location.reload()); }
+
+        function toggleSidebar() { 
+            document.getElementById('sidebar').classList.toggle('closed');
+            document.getElementById('main-content').classList.toggle('full');
         }
+
+        // --- CHAT ENGINE ---
+        async function sendMessage() {
+            const text = document.getElementById('user-input').value.trim();
+            if(!text || !currentUser) return;
+
+            addMsg(text, true);
+            const loadElem = addMsg("...", false);
+            document.getElementById('user-input').value = "";
+            currentMessages.push({role: "user", content: text});
+
+            try {
+                const res = await fetch(ENDPOINT, {
+                    method: "POST",
+                    headers: {"Content-Type":"application/json", "Authorization":`Bearer ${GROQ_KEY}`},
+                    body: JSON.stringify({
+                        model: "llama-3.3-70b-versatile",
+                        messages: [{role:"system", content:SYSTEM}, ...currentMessages],
+                        temperature: 0.2
+                    })
+                });
+                const data = await res.json();
+                const reply = data.choices[0].message.content;
+                loadElem.innerText = reply;
+                currentMessages.push({role: "assistant", content: reply});
+
+                // Save to User's Private Firebase Path
+                const safeEmail = currentUser.email.replace(/\./g, ',');
+                db.ref(`users/${safeEmail}/chats/${activeChatId}`).set({
+                    title: currentMessages[0].content.substring(0, 20),
+                    messages: currentMessages,
+                    lastUpdated: Date.now()
+                });
+            } catch(e) { loadElem.innerText = "Error Connecting."; }
+        }
+
+        function addMsg(t, isU) {
+            const d = document.createElement('div');
+            d.className = `msg ${isU ? 'user-msg' : 'bot-msg'}`;
+            d.innerText = t;
+            const win = document.getElementById('chat-window');
+            win.appendChild(d);
+            win.scrollTop = win.scrollHeight;
+            return d;
+        }
+
+        function startNewChat() {
+            activeChatId = "chat_" + Date.now();
+            currentMessages = [];
+            document.getElementById('chat-window').innerHTML = "";
+            addMsg(`Greetings, ${currentUser.displayName}. How can I help?`, false);
+        }
+
+        function loadChat(id, messages) {
+            activeChatId = id;
+            currentMessages = messages;
+            document.getElementById('chat-window').innerHTML = "";
+            currentMessages.forEach(m => addMsg(m.content, m.role === "user"));
+        }
+
+        function renderHistoryList() {
+            const safeEmail = currentUser.email.replace(/\./g, ',');
+            db.ref(`users/${safeEmail}/chats`).limitToLast(10).on('value', snapshot => {
+                const list = document.getElementById('history-list');
+                list.innerHTML = "";
+                snapshot.forEach(child => {
+                    const data = child.val();
+                    const item = document.createElement('div');
+                    item.className = `history-item ${child.key === activeChatId ? 'active' : ''}`;
+                    item.innerText = data.title || "Archive";
+                    item.onclick = () => loadChat(child.key, data.messages);
+                    list.appendChild(item);
+                });
+            });
+        }
+
+        document.getElementById('user-input').onkeydown = (e) => { if(e.key === "Enter") sendMessage(); }
     </script>
 </body>
 </html>
