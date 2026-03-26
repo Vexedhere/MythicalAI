@@ -3,249 +3,260 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mythical AI | Network Archives</title>
+    <title>Mythical AI | Founder Portal</title>
     
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        :root {
-            --bg: #0b0b0e; --sidebar-bg: #050507; --card: #16161a;
-            --accent: #d4af37; --text: #ffffff; --text-dim: #9ca3af;
-            --grad: linear-gradient(135deg, #d4af37 0%, #8a2be2 100%);
-        }
+        :root { --bg: #000; --sb-w: 260px; --accent: #fff; }
+        * { box-sizing: border-box; transition: all 0.2s ease; }
+        body, html { margin: 0; padding: 0; height: 100vh; background: var(--bg); color: #fff; font-family: -apple-system, system-ui, sans-serif; overflow: hidden; display: flex; }
 
-        * { box-sizing: border-box; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
-        body, html { margin: 0; padding: 0; height: 100%; background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, -apple-system, sans-serif; overflow: hidden; display: flex; }
+        /* --- AUTH OVERLAY --- */
+        #auth-overlay { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .auth-card { width: 360px; text-align: center; padding: 40px; background: #0a0a0a; border: 1px solid #222; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .auth-input { width: 100%; padding: 14px; background: #111; border: 1px solid #333; color: #fff; border-radius: 12px; margin-bottom: 12px; outline: none; }
+        .auth-btn { width: 100%; padding: 14px; background: #fff; color: #000; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; margin-bottom: 10px; }
+        
+        .google-btn { width: 100%; padding: 12px; background: #1a1a1a; color: #fff; border: 1px solid #333; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
+        .divider { margin: 20px 0; color: #444; font-size: 11px; font-weight: 800; position: relative; }
+        .divider::before, .divider::after { content: ""; position: absolute; top: 50%; width: 35%; height: 1px; background: #222; }
+        .divider::before { left: 0; } .divider::after { right: 0; }
 
         /* --- SIDEBAR --- */
-        #sidebar { 
-            width: 280px; background: var(--sidebar-bg); border-right: 1px solid #222; 
-            display: flex; flex-direction: column; padding: 20px; 
-            z-index: 100; position: absolute; height: 100%; left: 0;
-        }
-        #sidebar.closed { left: -280px; }
+        #sidebar { width: var(--sb-w); background: #050505; border-right: 1px solid #111; display: flex; flex-direction: column; padding: 25px 15px; z-index: 5000; position: fixed; height: 100%; left: 0; transition: left 0.3s ease; }
+        #sidebar.closed { left: calc(-1 * var(--sb-w)); }
+        .nav-item { padding: 12px; color: #fff; cursor: pointer; border-radius: 12px; font-size: 14px; display: flex; align-items: center; gap: 12px; font-weight: 700; margin-bottom: 5px; }
+        .nav-item:hover { background: #111; }
 
-        .new-chat-btn { 
-            background: #1f1f23; border: 1px solid #333; color: white; padding: 14px; 
-            border-radius: 12px; cursor: pointer; margin-bottom: 25px; font-weight: 600;
-            display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;
-        }
-        .new-chat-btn:hover { background: #2a2a30; border-color: var(--accent); transform: translateY(-2px); }
+        /* --- HISTORY --- */
+        #history-list { flex: 1; overflow-y: auto; margin-top: 15px; border-top: 1px solid #111; padding-top: 10px; display: flex; flex-direction: column; gap: 5px; }
+        .history-item { padding: 10px; color: #444; font-size: 13px; cursor: pointer; border-radius: 8px; display: flex; align-items: center; gap: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .history-item:hover { background: #111; color: #fff; }
 
-        .history-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .history-item { 
-            padding: 12px; border-radius: 10px; font-size: 14px; color: var(--text-dim); 
-            cursor: pointer; background: rgba(255,255,255,0.03); 
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .history-item.active { background: rgba(212, 175, 55, 0.1); color: var(--accent); border: 1px solid rgba(212,175,55,0.2); }
+        /* --- MAIN --- */
+        #main-content { margin-left: var(--sb-w); width: calc(100% - var(--sb-w)); height: 100vh; position: relative; display: flex; flex-direction: column; background: #000; }
+        #main-content.full { margin-left: 0; width: 100%; }
+        #menu-btn { position: fixed; top: 20px; left: 20px; background: #fff; border: none; border-radius: 10px; width: 42px; height: 42px; cursor: pointer; z-index: 6000; display: flex; align-items: center; justify-content: center; }
 
-        /* --- MAIN CONTENT --- */
-        #main-content { flex: 1; display: flex; flex-direction: column; position: relative; width: 100%; height: 100%; margin-left: 280px; }
-        #main-content.full { margin-left: 0; }
-        
-        header { 
-            padding: 15px 25px; border-bottom: 1px solid #222; display: flex; 
-            align-items: center; justify-content: space-between; background: rgba(11, 11, 14, 0.8);
-            backdrop-filter: blur(10px);
-        }
-        .menu-btn { background: transparent; border: none; color: white; font-size: 26px; cursor: pointer; display: flex; align-items: center; }
+        /* --- CHAT ENGINE --- */
+        #chat-window { flex: 1; overflow-y: auto; width: 100%; scroll-behavior: smooth; position: relative; }
+        #welcome-screen { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .welcome-title { font-size: clamp(40px, 8vw, 80px); font-weight: 950; letter-spacing: -3px; background: linear-gradient(#fff, #444); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        #chat-window { 
-            flex: 1; overflow-y: auto; padding: 40px 15%; display: flex; 
-            flex-direction: column; gap: 30px; scroll-behavior: smooth;
-        }
-        /* Mobile adjust */
-        @media (max-width: 768px) { #chat-window { padding: 20px 5%; } #main-content { margin-left: 0; } }
-
-        .msg { max-width: 85%; padding: 18px 24px; border-radius: 20px; font-size: 15px; line-height: 1.6; position: relative; }
-        .user-msg { align-self: flex-end; background: var(--grad); color: #000; font-weight: 500; border-bottom-right-radius: 4px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
-        .bot-msg { align-self: flex-start; background: #1c1c21; border: 1px solid #2d2d33; border-bottom-left-radius: 4px; color: #e5e7eb; }
+        #msg-box { display: none; flex-direction: column; width: 100%; padding: 100px 5% 180px; gap: 30px; }
+        .msg-row { display: flex; width: 100%; }
+        .user-row { justify-content: flex-end; }
+        .bot-row { justify-content: flex-start; }
+        .msg { max-width: 75%; padding: 16px 24px; font-size: 17px; line-height: 1.6; border-radius: 20px; word-wrap: break-word; }
+        .user-msg { background: #111; border: 1px solid #222; color: #fff; border-bottom-right-radius: 4px; text-align: left; }
+        .bot-msg { color: #ccc; border-left: 2px solid #222; padding-left: 20px; border-radius: 0; text-align: left; }
 
         /* --- INPUT --- */
-        .input-container { padding: 20px 15% 40px; background: linear-gradient(to top, var(--bg) 80%, transparent); }
-        .input-box { 
-            background: #16161a; border: 1px solid #333; border-radius: 18px; 
-            display: flex; align-items: center; padding: 14px 22px; gap: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-        }
-        .input-box:focus-within { border-color: var(--accent); box-shadow: 0 0 15px rgba(212, 175, 55, 0.2); }
-        
-        .chat-input { flex: 1; background: transparent; border: none; color: white; font-size: 16px; outline: none; }
-        .send-btn { background: var(--accent); color: #000; border: none; border-radius: 10px; width: 40px; height: 40px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; }
-
-        /* --- LOGIN OVERLAY --- */
-        #auth-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .login-card { width: 400px; background: var(--card); padding: 50px; border-radius: 30px; text-align: center; border: 1px solid #222; box-shadow: 0 30px 60px rgba(0,0,0,0.6); }
-        .google-btn { background: white; color: black; border: none; padding: 15px; border-radius: 15px; font-weight: 700; width: 100%; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 30px; font-size: 15px; }
-        .google-btn:hover { background: #f3f4f6; transform: scale(1.02); }
+        .bottom-zone { position: fixed; bottom: 0; right: 0; width: calc(100% - var(--sb-w)); padding: 20px 5% 10px; z-index: 7000; background: linear-gradient(transparent, #000 40%); }
+        #main-content.full .bottom-zone { width: 100%; }
+        .pill-box { background: #0a0a0a; border: 1px solid #222; border-radius: 100px; display: flex; align-items: center; padding: 5px 10px 5px 25px; width: 100%; max-width: 1000px; margin: 0 auto; border: 1px solid #333; }
+        .chat-input { flex: 1; background: transparent; border: none; color: white; font-size: 17px; outline: none; height: 50px; }
+        .send-btn { background: #fff; color: #000; border: none; border-radius: 50%; width: 42px; height: 42px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .footer { font-size: 10px; color: #222; margin-top: 15px; font-weight: 800; letter-spacing: 2px; text-align: center; }
     </style>
 </head>
 <body>
 
-    <div id="sidebar">
-        <div style="font-weight: 900; color: var(--accent); margin-bottom: 35px; font-size: 24px; letter-spacing: 2px;">MYTHICAL</div>
-        <button class="new-chat-btn" onclick="startNewChat()">+ New Archive</button>
-        <div class="history-list" id="history-list"></div>
-        <button onclick="logout()" style="margin-top:20px; background:transparent; border:none; color: #555; cursor: pointer; font-size: 13px;">Sign Out</button>
+    <div id="auth-overlay">
+        <div class="auth-card">
+            <h1 style="margin-bottom:20px; font-weight:900;">MYTHICAL.</h1>
+            <input type="email" id="email-field" class="auth-input" placeholder="Email">
+            <input type="password" id="pass-field" class="auth-input" placeholder="Password">
+            <button id="auth-btn" onclick="handleAuth()" class="auth-btn">Access Archives</button>
+            
+            <div class="divider">OR</div>
+            
+            <button onclick="loginWithGoogle()" class="google-btn">
+                <img src="https://www.google.com/favicon.ico" width="18"> Sign in with Google
+            </button>
+            
+            <p id="auth-error" style="color: #ff4444; font-size: 11px; margin-top: 15px; font-weight: bold;"></p>
+        </div>
     </div>
 
-    <div id="auth-overlay">
-        <div class="login-card">
-            <div style="font-size: 50px; margin-bottom: 15px;">🛡️</div>
-            <h2 style="margin:0; font-size: 24px; letter-spacing: 1px;">Network Portal</h2>
-            <p style="color:var(--text-dim); font-size: 14px; margin-top: 10px;">Login to access the Mythical Archives</p>
-            <button class="google-btn" onclick="loginWithGoogle()">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_Logo.svg" width="20"> Continue with Google
-            </button>
+    <button id="menu-btn" onclick="toggleSidebar()"><i data-lucide="menu"></i></button>
+
+    <div id="sidebar">
+        <div style="font-weight:900; font-size:24px; margin-bottom:40px; padding-left:10px;">MYTHICAL.</div>
+        <div class="nav-item" style="background:#fff; color:#000; justify-content:center; margin-bottom:20px;" onclick="startNewChat()">+ NEW CHAT</div>
+        <div style="font-size:10px; color:#222; font-weight:800; padding-left:10px;">RECENT HISTORY</div>
+        <div id="history-list"></div>
+        <div style="margin-top:auto; padding-top:20px; border-top:1px solid #111;">
+            <div class="nav-item" onclick="logout()"><i data-lucide="log-out"></i> Logout</div>
         </div>
     </div>
 
     <div id="main-content">
-        <header>
-            <div style="display: flex; align-items: center; gap: 20px;">
-                <button class="menu-btn" onclick="toggleSidebar()">☰</button>
-                <div id="active-title" style="font-weight: 600; color: var(--text-dim); font-size: 15px;">Archives v3.0</div>
+        <div id="chat-window">
+            <div id="welcome-screen">
+                <h1 class="welcome-title">How can I help?</h1>
+                <p style="color:#222; font-weight:800; margin-top:10px;">MYTHICAL NETWORK ARCHIVES</p>
             </div>
-            <div id="user-info" style="font-size: 12px; color: var(--accent); font-weight: 600; letter-spacing: 0.5px;"></div>
-        </header>
-        
-        <div id="chat-window"></div>
-
-        <div class="input-container">
-            <div class="input-box">
-                <input type="text" id="user-input" class="chat-input" placeholder="Message Mythical Archives..." autocomplete="off">
-                <button onclick="sendMessage()" class="send-btn">➔</button>
+            <div id="msg-box"></div>
+        </div>
+        <div class="bottom-zone">
+            <div class="pill-box">
+                <input type="text" id="user-input" class="chat-input" placeholder="Enter command..." onkeydown="if(event.key==='Enter') sendMessage()">
+                <button onclick="sendMessage()" class="send-btn"><i data-lucide="arrow-up"></i></button>
             </div>
+            <div class="footer">© 2026 MYTHICAL NETWORK | FOUNDED BY U. CHETHAN</div>
         </div>
     </div>
 
     <script>
-        // --- 1. FIREBASE CONFIG ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyDk2Hylmbu4WIWtTn0JYPEmLYXGaad5um8",
-            authDomain: "mythical-ai.firebaseapp.com",
-            projectId: "mythical-ai",
-            storageBucket: "mythical-ai.firebasestorage.app",
-            messagingSenderId: "405366066284",
-            appId: "1:405366066284:web:c7cbd9ce2ce7809db6dc49"
-        };
-        
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.database();
-
-        // --- 2. GROQ CONFIG ---
+        const SB_URL = 'https://mtczyuzbcunsflvcnatf.supabase.co';
+        const SB_KEY = 'sb_publishable_AKAJaNZknnvnHQOQVR3JSQ_Xopmf6yk'; 
+        const _supabase = supabase.createClient(SB_URL, SB_KEY);
         const GROQ_KEY = "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";
-        const ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
-        const SYSTEM = "You are the Mythical Network Assistant. Only discuss the Minecraft server (mc.mythicalstudios.online). No YouTubers. Answer in 1-2 short sentences.";
 
+        let chatMessages = [];
+        let currentChatId = null;
         let currentUser = null;
-        let activeChatId = "";
-        let currentMessages = [];
 
-        // --- AUTH LOGIC ---
-        function loginWithGoogle() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithRedirect(provider);
-        }
+        lucide.createIcons();
 
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                currentUser = user;
+        _supabase.auth.onAuthStateChange((event, session) => {
+            if (session) {
+                currentUser = session.user;
                 document.getElementById('auth-overlay').style.display = 'none';
-                document.getElementById('user-info').innerText = user.displayName.toUpperCase();
-                renderHistoryList();
-                startNewChat();
+                loadHistory();
             } else {
                 document.getElementById('auth-overlay').style.display = 'flex';
             }
         });
 
-        function logout() { auth.signOut().then(() => location.reload()); }
-
-        function toggleSidebar() { 
-            const isClosed = document.getElementById('sidebar').classList.toggle('closed');
-            document.getElementById('main-content').classList.toggle('full');
+        async function handleAuth() {
+            const email = document.getElementById('email-field').value;
+            const password = document.getElementById('pass-field').value;
+            const errBox = document.getElementById('auth-error');
+            const btn = document.getElementById('auth-btn');
+            
+            btn.innerText = "Verifying...";
+            const { error } = await _supabase.auth.signInWithPassword({ email, password });
+            
+            if (error) {
+                const { error: signUpError } = await _supabase.auth.signUp({ email, password });
+                if (signUpError) {
+                    errBox.innerText = signUpError.message;
+                    btn.innerText = "Access Archives";
+                } else {
+                    errBox.innerText = "Account created! You can now log in.";
+                    btn.innerText = "Access Archives";
+                }
+            }
         }
 
-        // --- CHAT ENGINE ---
+        async function loginWithGoogle() {
+            const { error } = await _supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: { redirectTo: window.location.origin }
+            });
+            if (error) alert(error.message);
+        }
+
         async function sendMessage() {
-            const text = document.getElementById('user-input').value.trim();
-            if(!text || !currentUser) return;
+            const input = document.getElementById('user-input');
+            const text = input.value.trim();
+            if(!text) return;
+
+            if (chatMessages.length === 0) {
+                document.getElementById('welcome-screen').style.display = 'none';
+                document.getElementById('msg-box').style.display = 'flex';
+                currentChatId = "sid_" + Date.now();
+            }
 
             addMsg(text, true);
-            const loadElem = addMsg("...", false);
-            document.getElementById('user-input').value = "";
-            currentMessages.push({role: "user", content: text});
+            chatMessages.push({role: "user", content: text});
+            input.value = "";
+            const load = addMsg("Thinking...", false);
 
             try {
-                const res = await fetch(ENDPOINT, {
+                const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                     method: "POST",
                     headers: {"Content-Type":"application/json", "Authorization":`Bearer ${GROQ_KEY}`},
                     body: JSON.stringify({
                         model: "llama-3.3-70b-versatile",
-                        messages: [{role:"system", content:SYSTEM}, ...currentMessages],
-                        temperature: 0.2
+                        messages: [{role:"system", content:"You are Mythical AI, founded by U. Chethan. Professional and concise."}, ...chatMessages]
                     })
                 });
                 const data = await res.json();
                 const reply = data.choices[0].message.content;
-                loadElem.innerText = reply;
-                currentMessages.push({role: "assistant", content: reply});
+                load.innerText = reply;
+                chatMessages.push({role: "assistant", content: reply});
 
-                const safeEmail = currentUser.email.replace(/\./g, ',');
-                db.ref(`users/${safeEmail}/chats/${activeChatId}`).set({
-                    title: currentMessages[0].content.substring(0, 25),
-                    messages: currentMessages,
-                    lastUpdated: Date.now()
-                });
-            } catch(e) { loadElem.innerText = "Error: API connection failed."; }
+                if (currentUser) {
+                    await _supabase.from('chat_history').upsert({
+                        user_email: currentUser.email,
+                        session_id: currentChatId,
+                        title: chatMessages[0].content.substring(0, 25),
+                        messages: chatMessages
+                    }, { onConflict: 'session_id' });
+                    loadHistory();
+                }
+            } catch(e) { load.innerText = "Connection lost."; }
         }
 
         function addMsg(t, isU) {
+            const row = document.createElement('div');
+            row.className = isU ? 'msg-row user-row' : 'msg-row bot-row';
             const d = document.createElement('div');
-            d.className = `msg ${isU ? 'user-msg' : 'bot-msg'}`;
+            d.className = isU ? 'msg user-msg' : 'msg bot-msg';
             d.innerText = t;
+            row.appendChild(d);
+            document.getElementById('msg-box').appendChild(row);
             const win = document.getElementById('chat-window');
-            win.appendChild(d);
             win.scrollTop = win.scrollHeight;
             return d;
         }
 
-        function startNewChat() {
-            activeChatId = "chat_" + Date.now();
-            currentMessages = [];
-            document.getElementById('chat-window').innerHTML = "";
-            addMsg(`System Initialized. Greetings, ${currentUser.displayName}. How can I assist you with the server archives?`, false);
-        }
-
-        function loadChat(id, messages) {
-            activeChatId = id;
-            currentMessages = messages;
-            document.getElementById('chat-window').innerHTML = "";
-            currentMessages.forEach(m => addMsg(m.content, m.role === "user"));
-        }
-
-        function renderHistoryList() {
-            const safeEmail = currentUser.email.replace(/\./g, ',');
-            db.ref(`users/${safeEmail}/chats`).limitToLast(12).on('value', snapshot => {
+        async function loadHistory() {
+            if (!currentUser) return;
+            const { data } = await _supabase.from('chat_history')
+                .select('*')
+                .eq('user_email', currentUser.email)
+                .order('created_at', { ascending: false });
+            
+            if (data) {
                 const list = document.getElementById('history-list');
                 list.innerHTML = "";
-                snapshot.forEach(child => {
-                    const data = child.val();
-                    const item = document.createElement('div');
-                    item.className = `history-item ${child.key === activeChatId ? 'active' : ''}`;
-                    item.innerText = data.title || "Archive Session";
-                    item.onclick = () => loadChat(child.key, data.messages);
-                    list.appendChild(item);
+                data.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = "history-item";
+                    div.innerHTML = `<i data-lucide="message-square" style="width:14px"></i> ${item.title || "Untitled"}`;
+                    div.onclick = () => {
+                        currentChatId = item.session_id;
+                        chatMessages = item.messages;
+                        document.getElementById('welcome-screen').style.display = 'none';
+                        document.getElementById('msg-box').style.display = 'flex';
+                        document.getElementById('msg-box').innerHTML = "";
+                        chatMessages.forEach(m => addMsg(m.content, m.role === "user"));
+                    };
+                    list.appendChild(div);
                 });
-            });
+                lucide.createIcons();
+            }
         }
 
-        document.getElementById('user-input').onkeydown = (e) => { if(e.key === "Enter") sendMessage(); }
+        function startNewChat() {
+            chatMessages = []; currentChatId = null;
+            document.getElementById('msg-box').innerHTML = "";
+            document.getElementById('msg-box').style.display = "none";
+            document.getElementById('welcome-screen').style.display = "flex";
+        }
+
+        function toggleSidebar() { 
+            document.getElementById('sidebar').classList.toggle('closed');
+            document.getElementById('main-content').classList.toggle('full');
+        }
+
+        async function logout() { await _supabase.auth.signOut(); location.reload(); }
     </script>
 </body>
 </html>
