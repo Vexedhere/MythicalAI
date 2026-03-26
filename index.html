@@ -9,87 +9,82 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        :root { --bg: #000; --sb-w: 260px; --accent: #fff; }
-        * { box-sizing: border-box; transition: all 0.2s ease; }
+        :root { --bg: #000; --sb-w: 260px; --accent: #fff; --panel: #0a0a0a; --border: #222; }
+        * { box-sizing: border-box; transition: all 0.2s ease; outline: none; }
         body, html { margin: 0; padding: 0; height: 100vh; background: var(--bg); color: #fff; font-family: -apple-system, system-ui, sans-serif; overflow: hidden; display: flex; }
 
         /* --- AUTH OVERLAY --- */
         #auth-overlay { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .auth-card { width: 360px; text-align: center; padding: 40px; background: #0a0a0a; border: 1px solid #222; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .auth-input { width: 100%; padding: 14px; background: #111; border: 1px solid #333; color: #fff; border-radius: 12px; margin-bottom: 12px; outline: none; }
+        .auth-card { width: 360px; text-align: center; padding: 40px; background: var(--panel); border: 1px solid var(--border); border-radius: 28px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); }
+        .auth-input { width: 100%; padding: 14px; background: #111; border: 1px solid #333; color: #fff; border-radius: 12px; margin-bottom: 12px; font-size: 15px; }
         .auth-btn { width: 100%; padding: 14px; background: #fff; color: #000; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; margin-bottom: 10px; }
-        
         .google-btn { width: 100%; padding: 12px; background: #1a1a1a; color: #fff; border: 1px solid #333; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
         .divider { margin: 20px 0; color: #444; font-size: 11px; font-weight: 800; position: relative; }
         .divider::before, .divider::after { content: ""; position: absolute; top: 50%; width: 35%; height: 1px; background: #222; }
         .divider::before { left: 0; } .divider::after { right: 0; }
 
         /* --- SIDEBAR --- */
-        #sidebar { width: var(--sb-w); background: #050505; border-right: 1px solid #111; display: flex; flex-direction: column; padding: 25px 15px; z-index: 5000; position: fixed; height: 100%; left: 0; transition: left 0.3s ease; }
-        #sidebar.closed { left: calc(-1 * var(--sb-w)); }
+        #sidebar { width: var(--sb-w); background: #050505; border-right: 1px solid #111; display: flex; flex-direction: column; padding: 25px 15px; z-index: 5000; position: fixed; height: 100%; left: 0; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        #sidebar.closed { transform: translateX(calc(-1 * var(--sb-w))); }
         .nav-item { padding: 12px; color: #fff; cursor: pointer; border-radius: 12px; font-size: 14px; display: flex; align-items: center; gap: 12px; font-weight: 700; margin-bottom: 5px; }
         .nav-item:hover { background: #111; }
 
-        /* --- HISTORY --- */
-        #history-list { flex: 1; overflow-y: auto; margin-top: 15px; border-top: 1px solid #111; padding-top: 10px; display: flex; flex-direction: column; gap: 5px; }
-        .history-item { padding: 10px; color: #444; font-size: 13px; cursor: pointer; border-radius: 8px; display: flex; align-items: center; gap: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* --- HISTORY LIST --- */
+        #history-list { flex: 1; overflow-y: auto; margin-top: 15px; border-top: 1px solid #111; padding-top: 15px; display: flex; flex-direction: column; gap: 4px; }
+        .history-item { padding: 10px 12px; color: #666; font-size: 13px; cursor: pointer; border-radius: 10px; display: flex; align-items: center; gap: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .history-item:hover { background: #111; color: #fff; }
 
-        /* --- MAIN --- */
-        #main-content { margin-left: var(--sb-w); width: calc(100% - var(--sb-w)); height: 100vh; position: relative; display: flex; flex-direction: column; background: #000; }
+        /* --- MAIN CONTENT --- */
+        #main-content { margin-left: var(--sb-w); width: calc(100% - var(--sb-w)); height: 100vh; position: relative; display: flex; flex-direction: column; background: #000; transition: margin 0.3s ease, width 0.3s ease; }
         #main-content.full { margin-left: 0; width: 100%; }
-        #menu-btn { position: fixed; top: 20px; left: 20px; background: #fff; border: none; border-radius: 10px; width: 42px; height: 42px; cursor: pointer; z-index: 6000; display: flex; align-items: center; justify-content: center; }
+        #menu-btn { position: fixed; top: 20px; left: 20px; background: #fff; border: none; border-radius: 12px; width: 44px; height: 44px; cursor: pointer; z-index: 6000; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
 
-        /* --- CHAT ENGINE --- */
-        #chat-window { flex: 1; overflow-y: auto; width: 100%; scroll-behavior: smooth; position: relative; }
+        /* --- CHAT AREA --- */
+        #chat-window { flex: 1; overflow-y: auto; width: 100%; scroll-behavior: smooth; position: relative; padding-top: 60px; }
         #welcome-screen { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        .welcome-title { font-size: clamp(40px, 8vw, 80px); font-weight: 950; letter-spacing: -3px; background: linear-gradient(#fff, #444); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-        #msg-box { display: none; flex-direction: column; width: 100%; padding: 100px 5% 180px; gap: 30px; }
+        .welcome-title { font-size: clamp(32px, 7vw, 70px); font-weight: 900; letter-spacing: -2px; background: linear-gradient(#fff, #555); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
+        
+        #msg-box { display: none; flex-direction: column; width: 100%; padding: 40px 8% 180px; gap: 35px; }
         .msg-row { display: flex; width: 100%; }
         .user-row { justify-content: flex-end; }
         .bot-row { justify-content: flex-start; }
-        .msg { max-width: 75%; padding: 16px 24px; font-size: 17px; line-height: 1.6; border-radius: 20px; word-wrap: break-word; }
-        .user-msg { background: #111; border: 1px solid #222; color: #fff; border-bottom-right-radius: 4px; text-align: left; }
-        .bot-msg { color: #ccc; border-left: 2px solid #222; padding-left: 20px; border-radius: 0; text-align: left; }
+        .msg { max-width: 80%; padding: 16px 22px; font-size: 16px; line-height: 1.6; border-radius: 20px; }
+        .user-msg { background: #111; border: 1px solid #222; color: #fff; border-bottom-right-radius: 4px; }
+        .bot-msg { color: #ddd; border-left: 2px solid #333; padding-left: 20px; border-radius: 0; font-family: serif; font-size: 18px; }
 
-        /* --- INPUT --- */
-        .bottom-zone { position: fixed; bottom: 0; right: 0; width: calc(100% - var(--sb-w)); padding: 20px 5% 10px; z-index: 7000; background: linear-gradient(transparent, #000 40%); }
+        /* --- INPUT PILL --- */
+        .bottom-zone { position: fixed; bottom: 0; right: 0; width: calc(100% - var(--sb-w)); padding: 20px 8% 10px; z-index: 7000; background: linear-gradient(transparent, #000 50%); }
         #main-content.full .bottom-zone { width: 100%; }
-        .pill-box { background: #0a0a0a; border: 1px solid #222; border-radius: 100px; display: flex; align-items: center; padding: 5px 10px 5px 25px; width: 100%; max-width: 1000px; margin: 0 auto; border: 1px solid #333; }
-        .chat-input { flex: 1; background: transparent; border: none; color: white; font-size: 17px; outline: none; height: 50px; }
+        .pill-box { background: #0d0d0d; border: 1px solid #222; border-radius: 100px; display: flex; align-items: center; padding: 6px 10px 6px 28px; width: 100%; max-width: 900px; margin: 0 auto; }
+        .chat-input { flex: 1; background: transparent; border: none; color: white; font-size: 16px; height: 48px; }
         .send-btn { background: #fff; color: #000; border: none; border-radius: 50%; width: 42px; height: 42px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .footer { font-size: 10px; color: #222; margin-top: 15px; font-weight: 800; letter-spacing: 2px; text-align: center; }
+        .footer { font-size: 9px; color: #333; margin-top: 15px; font-weight: 900; letter-spacing: 3px; text-align: center; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
     <div id="auth-overlay">
         <div class="auth-card">
-            <h1 style="margin-bottom:20px; font-weight:900;">MYTHICAL.</h1>
-            <input type="email" id="email-field" class="auth-input" placeholder="Email">
+            <h1 style="margin-bottom:20px; font-weight:900; letter-spacing:-1px;">MYTHICAL.</h1>
+            <input type="email" id="email-field" class="auth-input" placeholder="Email Address">
             <input type="password" id="pass-field" class="auth-input" placeholder="Password">
             <button id="auth-btn" onclick="handleAuth()" class="auth-btn">Access Archives</button>
-            
             <div class="divider">OR</div>
-            
             <button onclick="loginWithGoogle()" class="google-btn">
-                <img src="https://www.google.com/favicon.ico" width="18"> Sign in with Google
+                <img src="https://www.google.com/favicon.ico" width="16"> Sign in with Google
             </button>
-            
-            <p id="auth-error" style="color: #ff4444; font-size: 11px; margin-top: 15px; font-weight: bold;"></p>
+            <p id="auth-error" style="color: #ff4444; font-size: 11px; margin-top: 15px; font-weight: 700;"></p>
         </div>
     </div>
 
     <button id="menu-btn" onclick="toggleSidebar()"><i data-lucide="menu"></i></button>
-
     <div id="sidebar">
-        <div style="font-weight:900; font-size:24px; margin-bottom:40px; padding-left:10px;">MYTHICAL.</div>
-        <div class="nav-item" style="background:#fff; color:#000; justify-content:center; margin-bottom:20px;" onclick="startNewChat()">+ NEW CHAT</div>
-        <div style="font-size:10px; color:#222; font-weight:800; padding-left:10px;">RECENT HISTORY</div>
+        <div style="font-weight:900; font-size:22px; margin-bottom:40px; padding-left:10px; letter-spacing:-1px;">MYTHICAL.</div>
+        <div class="nav-item" style="background:#fff; color:#000; justify-content:center; margin-bottom:25px;" onclick="startNewChat()">+ NEW CHAT</div>
+        <div style="font-size:10px; color:#333; font-weight:900; padding-left:12px; letter-spacing:1px;">RECENT ARCHIVES</div>
         <div id="history-list"></div>
         <div style="margin-top:auto; padding-top:20px; border-top:1px solid #111;">
-            <div class="nav-item" onclick="logout()"><i data-lucide="log-out"></i> Logout</div>
+            <div class="nav-item" onclick="logout()" style="color:#666;"><i data-lucide="log-out"></i> Sign Out</div>
         </div>
     </div>
 
@@ -97,16 +92,16 @@
         <div id="chat-window">
             <div id="welcome-screen">
                 <h1 class="welcome-title">How can I help?</h1>
-                <p style="color:#222; font-weight:800; margin-top:10px;">MYTHICAL NETWORK ARCHIVES</p>
+                <p style="color:#333; font-weight:900; margin-top:12px; letter-spacing:2px;">MYTHICAL NETWORK</p>
             </div>
             <div id="msg-box"></div>
         </div>
         <div class="bottom-zone">
             <div class="pill-box">
-                <input type="text" id="user-input" class="chat-input" placeholder="Enter command..." onkeydown="if(event.key==='Enter') sendMessage()">
+                <input type="text" id="user-input" class="chat-input" placeholder="Message Mythical AI..." onkeydown="if(event.key==='Enter') sendMessage()">
                 <button onclick="sendMessage()" class="send-btn"><i data-lucide="arrow-up"></i></button>
             </div>
-            <div class="footer">© 2026 MYTHICAL NETWORK | FOUNDED BY U. CHETHAN</div>
+            <div class="footer">Founded by U. Chethan | Mythical Studios © 2026</div>
         </div>
     </div>
 
@@ -138,7 +133,7 @@
             const errBox = document.getElementById('auth-error');
             const btn = document.getElementById('auth-btn');
             
-            btn.innerText = "Verifying...";
+            btn.innerText = "Connecting...";
             const { error } = await _supabase.auth.signInWithPassword({ email, password });
             
             if (error) {
@@ -147,18 +142,17 @@
                     errBox.innerText = signUpError.message;
                     btn.innerText = "Access Archives";
                 } else {
-                    errBox.innerText = "Account created! You can now log in.";
+                    errBox.innerText = "Account created. Please log in.";
                     btn.innerText = "Access Archives";
                 }
             }
         }
 
         async function loginWithGoogle() {
-            const { error } = await _supabase.auth.signInWithOAuth({
+            await _supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: { redirectTo: window.location.origin }
             });
-            if (error) alert(error.message);
         }
 
         async function sendMessage() {
@@ -175,7 +169,7 @@
             addMsg(text, true);
             chatMessages.push({role: "user", content: text});
             input.value = "";
-            const load = addMsg("Thinking...", false);
+            const load = addMsg("...", false);
 
             try {
                 const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -183,7 +177,7 @@
                     headers: {"Content-Type":"application/json", "Authorization":`Bearer ${GROQ_KEY}`},
                     body: JSON.stringify({
                         model: "llama-3.3-70b-versatile",
-                        messages: [{role:"system", content:"You are Mythical AI, founded by U. Chethan. Professional and concise."}, ...chatMessages]
+                        messages: [{role:"system", content:"You are Mythical AI, founded by U. Chethan. Keep responses brief and professional."}, ...chatMessages]
                     })
                 });
                 const data = await res.json();
@@ -195,12 +189,12 @@
                     await _supabase.from('chat_history').upsert({
                         user_email: currentUser.email,
                         session_id: currentChatId,
-                        title: chatMessages[0].content.substring(0, 25),
+                        title: chatMessages[0].content.substring(0, 30),
                         messages: chatMessages
                     }, { onConflict: 'session_id' });
                     loadHistory();
                 }
-            } catch(e) { load.innerText = "Connection lost."; }
+            } catch(e) { load.innerText = "Sync Error."; }
         }
 
         function addMsg(t, isU) {
@@ -223,13 +217,13 @@
                 .eq('user_email', currentUser.email)
                 .order('created_at', { ascending: false });
             
-            if (data) {
-                const list = document.getElementById('history-list');
-                list.innerHTML = "";
+            const list = document.getElementById('history-list');
+            list.innerHTML = "";
+            if (data && data.length > 0) {
                 data.forEach(item => {
                     const div = document.createElement('div');
                     div.className = "history-item";
-                    div.innerHTML = `<i data-lucide="message-square" style="width:14px"></i> ${item.title || "Untitled"}`;
+                    div.innerHTML = `<i data-lucide="message-square"></i> ${item.title || "Untitled Chat"}`;
                     div.onclick = () => {
                         currentChatId = item.session_id;
                         chatMessages = item.messages;
