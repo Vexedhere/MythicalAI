@@ -3,55 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mythical AI | Elite Portal</title>
+    <title>Mythical AI | Cloud Portal</title>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --p-purple: #7D2AE8; --dark-bg: #050505; --card-bg: #0D0D0D; --border: #1a1a1a; }
         body { margin:0; font-family: 'Inter', sans-serif; background:#000; color:#fff; display:flex; height: 100vh; overflow: hidden; }
         
-        /* SIDEBAR */
         #sidebar { width:300px; background: var(--dark-bg); padding:20px; display:flex; flex-direction:column; border-right: 1px solid #111; gap: 12px; transition: 0.4s ease; position: relative; }
         #sidebar.closed { width: 0; padding: 0; overflow: hidden; border: none; }
         .logo-text { color: var(--p-purple); font-weight: 900; font-size: 1.2rem; letter-spacing: 3px; }
 
-        /* BADGES */
         .tier-badge { font-size: 0.6rem; padding: 3px 8px; border-radius: 6px; font-weight: bold; margin-left: 8px; text-transform: uppercase; letter-spacing: 1px; }
         .badge-basic { background: #222; color: #888; border: 1px solid #333; }
-        .badge-plus { background: #00c8ff; color: #000; box-shadow: 0 0 10px rgba(0,200,255,0.4); }
-        .badge-pro { background: var(--p-purple); color: #fff; animation: pulse-purple 2s infinite; border: 1px solid rgba(255,255,255,0.2); }
         .badge-founder { background: linear-gradient(90deg, #FFD700, #FFA500); color: #000; animation: pulse-gold 2s infinite; border: 1px solid #FFF; }
-        
-        /* NEW STAFF BADGES */
         .badge-admin { background: #ff0044; color: #fff; animation: pulse-red 2s infinite; border: 1px solid #FFF; }
         .badge-mod { background: #00ffcc; color: #000; animation: pulse-cyan 2s infinite; border: 1px solid #FFF; }
 
         @keyframes pulse-gold { 0%, 100% { box-shadow: 0 0 5px rgba(255,215,0,0.4); } 50% { box-shadow: 0 0 20px rgba(255,215,0,0.8); } }
-        @keyframes pulse-purple { 0%, 100% { box-shadow: 0 0 5px rgba(125,42,232,0.4); } 50% { box-shadow: 0 0 20px rgba(125,42,232,0.8); } }
         @keyframes pulse-red { 0%, 100% { box-shadow: 0 0 5px rgba(255,0,68,0.4); } 50% { box-shadow: 0 0 20px rgba(255,0,68,0.8); } }
-        @keyframes pulse-cyan { 0%, 100% { box-shadow: 0 0 5px rgba(0,255,204,0.4); } 50% { box-shadow: 0 0 20px rgba(0,255,204,0.8); } }
 
-        /* PRICING PAGE */
-        #pricing-page { position: fixed; inset: 0; background: rgba(0,0,0,0.98); backdrop-filter: blur(15px); z-index: 2000; display: none; padding: 40px; overflow-y: auto; text-align: center; }
-        .plan-card { background: #0D0D0D; border: 1px solid #222; padding: 30px; border-radius: 28px; width: 280px; text-align: left; transition: 0.3s; position: relative; }
-        .plan-card:hover { transform: translateY(-10px); border-color: var(--p-purple); }
-        .plan-price { font-size: 2.2rem; font-weight: 800; color: #fff; margin: 15px 0; }
-        .plan-price span { font-size: 0.9rem; color: #444; }
-
-        /* INPUT PILL */
         .input-container { position: absolute; bottom: 35px; left: 0; right: 0; display: flex; justify-content: center; z-index: 100; }
         .input-wrapper { width: 65%; background: rgba(15,15,15,0.8); backdrop-filter: blur(20px); border-radius: 50px; padding: 8px 12px 8px 25px; display: flex; align-items: center; border: 1px solid #222; box-shadow: 0 0 25px rgba(125,42,232,0.1); }
         #input { flex:1; background:transparent; border:none; color:#fff; outline:none; font-size: 1rem; padding: 12px 0; }
         
-        /* CHAT */
         #main { flex:1; display:flex; flex-direction:column; position: relative; }
         #chat { flex:1; overflow-y:auto; padding: 80px 15% 150px 15%; scroll-behavior: smooth; }
         .msg { max-width: 80%; margin: 20px 0; padding: 18px 24px; border-radius: 24px; animation: msgFade 0.4s ease; }
         .user { margin-left:auto; background: #111; border: 1px solid #222; }
         .bot { background: transparent; border-left: 2px solid var(--p-purple); padding-left: 25px; color: #ddd; }
 
-        @keyframes msgFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
         #sidebar-toggle { position: fixed; top: 20px; left: 20px; z-index: 1001; background: #111; border: 1px solid #333; color: #fff; padding: 10px; border-radius: 12px; cursor: pointer; }
         #login { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:#000; z-index: 3000; }
+        
+        .history-item { padding:12px; color:#555; cursor:pointer; font-size:0.85rem; transition: 0.3s; border-radius: 8px; }
+        .history-item:hover { background: #111; color: #fff; }
     </style>
 </head>
 <body>
@@ -79,7 +65,6 @@
     </div>
     
     <div style="background:#0A0A0A; padding:15px; border-radius:18px; border:1px solid var(--border);">
-        <div style="font-size:0.6rem; color:var(--p-purple); font-weight:bold; text-transform:uppercase; margin-bottom:8px;">User Identity 🛡️</div>
         <div style="display: flex; align-items: center; gap: 12px;">
             <div id="userInit" style="width:36px; height:36px; background:var(--p-purple); border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold;">?</div>
             <div>
@@ -87,49 +72,14 @@
                     <span id="sideName" style="font-size:0.9rem; font-weight:bold;">Guest</span>
                     <span id="userTier" class="tier-badge badge-basic">BASIC</span>
                 </div>
-                <div id="sideMail" style="font-size:0.7rem; color:#444;">user@mythical.ai</div>
             </div>
         </div>
     </div>
 
-    <div id="upg-box" style="background:#0A0A0A; padding:15px; border-radius:18px; border:1px solid var(--border);">
-        <button onclick="togglePricing(true)" style="width:100%; padding:10px; background:var(--p-purple); border:none; border-radius:10px; color:#fff; font-size:0.75rem; font-weight:bold; cursor:pointer;">UPGRADE PLAN ⚡</button>
-    </div>
-
-    <button onclick="newChat()" style="width:100%; padding:12px; background:transparent; border:1px solid #222; color:#fff; border-radius:12px; cursor:pointer; margin-top: 10px;">+ New AI Thread</button>
+    <button onclick="newChat()" style="width:100%; padding:12px; background:transparent; border:1px solid #222; color:#fff; border-radius:12px; cursor:pointer; margin-top: 10px;">+ New Cloud Thread</button>
     <div id="history" style="flex:1; overflow-y:auto; margin:10px 0;"></div>
     
-    <button onclick="localStorage.removeItem('myth_name'); localStorage.removeItem('myth_mail'); localStorage.removeItem('myth_tier'); location.reload();" style="color:#ff4444; background:none; border:none; cursor:pointer; font-size:0.7rem; opacity:0.4;">Logout</button>
-</div>
-
-<div id="pricing-page">
-    <button style="position:absolute; top:30px; right:40px; background:#111; color:#fff; border:1px solid #333; padding:12px 20px; border-radius:14px; cursor:pointer;" onclick="togglePricing(false)">✕ Close</button>
-    <div style="margin-top:60px;">
-        <h1>Elevate Your Mythical AI ⚡</h1>
-        <div style="display:flex; justify-content:center; gap:25px; flex-wrap:wrap; margin-top: 40px;">
-            <div class="plan-card">
-                <h3 style="color:#00c8ff; margin:0;">MYTHICAL PLUS</h3>
-                <div class="plan-price">₹199<span>/mo</span></div>
-                <ul style="padding:0; list-style:none; font-size:0.85rem; color:#888; line-height:2.2;">
-                    <li>✅ Fast Response Times</li>
-                    <li>✅ High-Res Image Generation</li>
-                    <li>✅ Access to GPT-4o Mini</li>
-                </ul>
-                <a href="upi://pay?pa=bhargavi1204@ybl&am=199" onclick="activateTier('plus')" style="display:block; text-align:center; padding:15px; background:#fff; color:#000; border-radius:14px; font-weight:bold; text-decoration:none; margin-top:20px;">ACTIVATE PLUS</a>
-            </div>
-            <div class="plan-card" style="border-color:var(--p-purple);">
-                <div style="position:absolute; top:-15px; right:20px; background:var(--p-purple); color:white; padding:5px 15px; border-radius:20px; font-size:0.7rem; font-weight:bold;">BEST VALUE</div>
-                <h3 style="color:var(--p-purple); margin:0;">MYTHICAL PRO 👑</h3>
-                <div class="plan-price">₹399<span>/mo</span></div>
-                <ul style="padding:0; list-style:none; font-size:0.85rem; color:#888; line-height:2.2;">
-                    <li>✅ <b>Ultra-Core Llama 3.3 (70B)</b></li>
-                    <li>✅ 4K Hyper-Real Image Gen</li>
-                    <li>✅ Animated Pro Badge</li>
-                </ul>
-                <a href="upi://pay?pa=bhargavi1204@ybl&am=399" onclick="activateTier('pro')" style="display:block; text-align:center; padding:15px; background:var(--p-purple); color:#fff; border-radius:14px; font-weight:bold; text-decoration:none; margin-top:20px;">ACTIVATE PRO</a>
-            </div>
-        </div>
-    </div>
+    <button onclick="localStorage.clear(); location.reload();" style="color:#ff4444; background:none; border:none; cursor:pointer; font-size:0.7rem; opacity:0.4;">Full System Logout</button>
 </div>
 
 <div id="main">
@@ -143,134 +93,85 @@
 </div>
 
 <script>
-// MAKE SURE THIS IS YOUR ACTIVE GROQ API KEY
+// --- CONFIG ---
 const GROQ_KEY = "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";
+const SUPABASE_URL = "https://mtczyuzbcunsflvcnatf.supabase.co";
+const SUPABASE_KEY = "YOUR_ANON_KEY_HERE"; // Replace with your actual anon key!
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 function toggleSidebar() { document.getElementById("sidebar").classList.toggle("closed"); }
-function togglePricing(show) { document.getElementById("pricing-page").style.display = show ? "block" : "none"; }
 
-// DYNAMIC SECURITY CHECKER
 function checkStaff() {
     const n = document.getElementById("userName").value.toLowerCase();
     const passArea = document.getElementById("staff-pass-area");
-    const label = document.getElementById("staff-label");
-
-    if (n.includes("chethan")) {
-        label.innerText = "FOUNDER PIN REQUIRED 👑";
-        label.style.color = "#FFD700";
-        document.getElementById("staffPass").style.borderColor = "#FFD700";
+    if (n.includes("chethan") || n.includes("thaman") || n.includes("pavan")) {
         passArea.style.display = "block";
-    } else if (n.includes("thaman") || n.includes("pavan")) {
-        label.innerText = "STAFF PIN REQUIRED 🛡️";
-        label.style.color = "#ff0044";
-        document.getElementById("staffPass").style.borderColor = "#ff0044";
-        passArea.style.display = "block";
-    } else {
-        passArea.style.display = "none";
-    }
+    } else { passArea.style.display = "none"; }
 }
 
-function validateEmail(email) { return email.includes("@") && email.includes("."); }
-function activateTier(tier) { localStorage.setItem("myth_tier", tier); init(); }
-
-function loginUser() {
+async function loginUser() {
     const name = document.getElementById("userName").value.trim();
-    const mail = document.getElementById("userEmail").value.trim();
     const pass = document.getElementById("staffPass").value.trim();
     const lowerName = name.toLowerCase();
     
-    if(!name || !mail) { alert("Please enter both Name and Email."); return; }
-    if(!validateEmail(mail)) { alert("Please enter a valid email address."); return; }
-    
-    // ROLE ASSIGNMENT
-    if (lowerName.includes("chethan")) {
-        if (pass !== "Chethan6912") { alert("Access Denied. Founder Pin Incorrect."); return; }
-        localStorage.setItem("myth_tier", "founder");
-    } else if (lowerName.includes("thaman")) {
-        if (pass !== "MythicalSv") { alert("Access Denied. Admin Pin Incorrect."); return; }
-        localStorage.setItem("myth_tier", "admin");
-    } else if (lowerName.includes("pavan")) {
-        if (pass !== "MythicalSv") { alert("Access Denied. Mod Pin Incorrect."); return; }
-        localStorage.setItem("myth_tier", "mod");
-    } else { 
-        localStorage.setItem("myth_tier", "basic"); 
-    }
-    
-    localStorage.setItem("myth_name", name); 
-    localStorage.setItem("myth_mail", mail); 
+    if (lowerName.includes("chethan") && pass !== "Chethan6912") return alert("Wrong Pin");
+    if ((lowerName.includes("thaman") || lowerName.includes("pavan")) && pass !== "MythicalSv") return alert("Wrong Pin");
+
+    localStorage.setItem("myth_name", name);
+    localStorage.setItem("myth_tier", lowerName.includes("chethan") ? "founder" : (lowerName.includes("thaman") ? "admin" : (lowerName.includes("pavan") ? "mod" : "basic")));
     init();
 }
 
-function init() {
+async function init() {
     const name = localStorage.getItem("myth_name");
-    const mail = localStorage.getItem("myth_mail");
-    const tier = localStorage.getItem("myth_tier") || "basic";
-    
     if(name) {
-        // AUTO-LOGOUT UNAUTHORIZED STAFF (Fixed to preserve chat history)
-        const lower = name.toLowerCase();
-        if ((lower.includes("thaman") && tier !== "admin") || 
-            (lower.includes("pavan") && tier !== "mod") || 
-            (lower.includes("chethan") && tier !== "founder")) {
-            
-            localStorage.removeItem("myth_name");
-            localStorage.removeItem("myth_mail");
-            localStorage.removeItem("myth_tier");
-            location.reload();
-            return;
-        }
-
+        document.getElementById("login").style.display = "none";
         document.getElementById("sideName").innerText = name;
-        document.getElementById("sideMail").innerText = mail;
+        const tier = localStorage.getItem("myth_tier");
+        const b = document.getElementById("userTier");
+        b.innerText = tier; b.className = `tier-badge badge-${tier}`;
         document.getElementById("userInit").innerText = name.charAt(0).toUpperCase();
         
-        const b = document.getElementById("userTier");
-        b.innerText = tier;
-        b.className = `tier-badge badge-${tier}`;
-        
-        // Hide upgrade box for Staff
-        if(tier === "founder" || tier === "admin" || tier === "mod") {
-            document.getElementById("upg-box").style.display = "none";
-        }
-
-        document.getElementById("login").style.display = "none";
-        renderHist(); newChat();
+        await fetchCloudHistory();
+        newChat();
     }
 }
 
-let messages = [];
-function renderHist() {
-    const box = document.getElementById("history");
-    const user = localStorage.getItem("myth_name");
-    let h = JSON.parse(localStorage.getItem("myth_ai_v19") || "[]");
-    box.innerHTML = h.filter(i => i.owner === user).map(c => `<div style="padding:12px; color:#555; cursor:pointer; font-size:0.85rem;" onclick="loadChat('${c.id}')">🤖 ${c.title}</div>`).join('');
+async function fetchCloudHistory() {
+    const name = localStorage.getItem("myth_name");
+    const { data, error } = await supabase
+        .from('mythical_chats')
+        .select('*')
+        .eq('owner', name)
+        .order('created_at', { ascending: false });
+
+    if (data) {
+        const box = document.getElementById("history");
+        box.innerHTML = data.map(c => `
+            <div class="history-item" onclick="loadCloudChat('${c.id}')">
+                ☁️ ${c.title}
+            </div>
+        `).join('');
+    }
 }
 
-function loadChat(id) {
-    let h = JSON.parse(localStorage.getItem("myth_ai_v19") || "[]");
-    const c = h.find(i => i.id === id);
-    if(c) {
-        messages = c.messages;
+let currentChatId = null;
+let messages = [];
+
+async function loadCloudChat(id) {
+    const { data } = await supabase.from('mythical_chats').select('*').eq('id', id).single();
+    if (data) {
+        currentChatId = data.id;
+        messages = data.messages;
         document.getElementById("chat").innerHTML = "";
         messages.forEach(m => addMsg(m.content, m.role === "user"));
     }
 }
 
 function newChat() {
+    currentChatId = null;
     messages = [];
-    const name = localStorage.getItem("myth_name") || "User";
-    const tier = localStorage.getItem("myth_tier");
-    
-    let statusText = "Mythical AI Core Online.";
-    if(tier === "founder") statusText = "Founder System Online. 👑";
-    if(tier === "admin") statusText = "Admin Controls Active. 🛡️";
-    if(tier === "mod") statusText = "Moderator Node Active. ⚡";
-
-    const d = new Date();
-    const isRamaNavami = (d.getMonth() === 2 && d.getDate() === 27); 
-    const festiveMessage = isRamaNavami ? `<h3 style="color:#FFD700; margin: 5px 0;">🏹 Happy Sri Rama Navami!</h3>` : "";
-
-    document.getElementById("chat").innerHTML = `<div style="text-align:center; margin-top:15vh;"><h1>Welcome, ${name} ✨</h1>${festiveMessage}<p style="color:#444;">${statusText}</p></div>`;
+    document.getElementById("chat").innerHTML = `<div style="text-align:center; margin-top:15vh;"><h1>Welcome, ${localStorage.getItem("myth_name")} ✨</h1><p style="color:#444;">Cloud Memory Sync Active.</p></div>`;
 }
 
 function addMsg(text, isUser) {
@@ -287,15 +188,9 @@ async function send() {
     const text = input.value.trim();
     if(!text) return;
 
-    const currentUserName = localStorage.getItem("myth_name") || "User";
-
     addMsg(text, true);
     messages.push({role: "user", content: text});
     input.value = "";
-
-    const d = new Date();
-    const isRamaNavami = (d.getMonth() === 2 && d.getDate() === 27);
-    const festivePrompt = isRamaNavami ? " Context: Today is Sri Rama Navami. Wish them a happy festival ONLY in your very first reply of this conversation. DO NOT repeat the greeting in subsequent messages. 🏹✨" : "";
 
     try {
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -303,13 +198,7 @@ async function send() {
             headers: { "Content-Type": "application/json", "Authorization": "Bearer " + GROQ_KEY },
             body: JSON.stringify({ 
                 model: "llama-3.3-70b-versatile", 
-                messages: [
-                    {
-                        role: "system", 
-                        content: `You are Mythical AI by Mythical Studios. Owner: U. Chethan. Father: Rangaswamy. Mother: Bhargavi. Sister: Sudhishna. Best Friends: Pavan and Thaman. School: The Hyderabad Public School Kadapa. Principal: Amit Singh. No Minecraft. High-tech & Professional. You are currently talking to: ${currentUserName}. Address them by their name. ✨` + festivePrompt
-                    }, 
-                    ...messages
-                ] 
+                messages: [{role: "system", content: "You are Mythical AI by Mythical Studios. Professional & High Tech."}, ...messages] 
             })
         });
         const data = await res.json();
@@ -317,13 +206,18 @@ async function send() {
         addMsg(reply, false);
         messages.push({role: "assistant", content: reply});
 
-        if(messages.length === 2) {
-            let h = JSON.parse(localStorage.getItem("myth_ai_v19") || "[]");
-            h.unshift({ id: Date.now().toString(), owner: currentUserName, title: text.substring(0,18), messages: [...messages] });
-            localStorage.setItem("myth_ai_v19", JSON.stringify(h));
-            renderHist();
+        // --- CLOUD SYNC LOGIC ---
+        const name = localStorage.getItem("myth_name");
+        if (!currentChatId) {
+            const { data: newChat, error } = await supabase.from('mythical_chats').insert([
+                { owner: name, title: text.substring(0, 20), messages: messages }
+            ]).select();
+            if (newChat) currentChatId = newChat[0].id;
+        } else {
+            await supabase.from('mythical_chats').update({ messages: messages }).eq('id', currentChatId);
         }
-    } catch { addMsg("ERR: Sync Failed. Please check API Key.", false); }
+        fetchCloudHistory();
+    } catch { addMsg("Cloud Sync Error.", false); }
 }
 
 lucide.createIcons();
