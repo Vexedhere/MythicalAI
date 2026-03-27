@@ -98,7 +98,8 @@
 
     <button onclick="newChat()" style="width:100%; padding:12px; background:transparent; border:1px solid #222; color:#fff; border-radius:12px; cursor:pointer; margin-top: 10px;">+ New AI Thread</button>
     <div id="history" style="flex:1; overflow-y:auto; margin:10px 0;"></div>
-    <button onclick="localStorage.clear(); location.reload();" style="color:#ff4444; background:none; border:none; cursor:pointer; font-size:0.7rem; opacity:0.4;">Logout</button>
+    
+    <button onclick="localStorage.removeItem('myth_name'); localStorage.removeItem('myth_mail'); localStorage.removeItem('myth_tier'); location.reload();" style="color:#ff4444; background:none; border:none; cursor:pointer; font-size:0.7rem; opacity:0.4;">Logout</button>
 </div>
 
 <div id="pricing-page">
@@ -206,12 +207,15 @@ function init() {
     const tier = localStorage.getItem("myth_tier") || "basic";
     
     if(name) {
-        // AUTO-LOGOUT UNAUTHORIZED STAFF (Kicks out people currently using Thaman/Pavan without pins)
+        // AUTO-LOGOUT UNAUTHORIZED STAFF (Fixed to preserve chat history)
         const lower = name.toLowerCase();
         if ((lower.includes("thaman") && tier !== "admin") || 
             (lower.includes("pavan") && tier !== "mod") || 
             (lower.includes("chethan") && tier !== "founder")) {
-            localStorage.clear();
+            
+            localStorage.removeItem("myth_name");
+            localStorage.removeItem("myth_mail");
+            localStorage.removeItem("myth_tier");
             location.reload();
             return;
         }
@@ -238,7 +242,6 @@ let messages = [];
 function renderHist() {
     const box = document.getElementById("history");
     const user = localStorage.getItem("myth_name");
-    // Updated to v19 to clear old bugs
     let h = JSON.parse(localStorage.getItem("myth_ai_v19") || "[]");
     box.innerHTML = h.filter(i => i.owner === user).map(c => `<div style="padding:12px; color:#555; cursor:pointer; font-size:0.85rem;" onclick="loadChat('${c.id}')">🤖 ${c.title}</div>`).join('');
 }
