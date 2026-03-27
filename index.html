@@ -21,21 +21,32 @@
         .bot { background: transparent; border-left: 2px solid var(--p-purple); padding-left: 25px; }
         .input-container { position: absolute; bottom: 35px; left: 0; right: 0; display: flex; justify-content: center; }
         .input-wrapper { width: 65%; background: rgba(15,15,15,0.8); backdrop-filter: blur(20px); border-radius: 50px; padding: 8px 12px 8px 25px; display: flex; align-items: center; border: 1px solid #222; }
-        #input { flex:1; background:transparent; border:none; color:#fff; outline:none; }
+        #input { flex:1; background:transparent; border:none; color:#fff; outline:none; font-size: 1rem; padding: 12px 0; }
         #login { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:#000; z-index: 3000; }
-        .login-card { background:#0D0D0D; padding:40px; border-radius:30px; border:1px solid #222; text-align:center; width:340px; }
-        .auth-btn { width:100%; padding:14px; border:none; border-radius:12px; cursor:pointer; font-weight:bold; margin-bottom:10px; }
+        .login-card { background:#0D0D0D; padding:40px; border-radius:30px; border:1px solid #222; text-align:center; width:340px; max-height: 90vh; overflow-y: auto; }
+        .auth-btn { width:100%; padding:14px; border:none; border-radius:12px; cursor:pointer; font-weight:bold; margin-bottom:10px; transition: 0.2s; }
         .btn-google { background:#fff; color:#000; }
-        .history-item { padding:10px; color:#666; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; gap:10px; }
+        .btn-email { background: var(--p-purple); color:#fff; margin-top: 10px; }
+        .history-item { padding:12px; color:#666; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; gap:10px; border-radius: 8px; }
+        .history-item:hover { background: #111; color: #fff; }
+        input.auth-input { width:90%; padding:14px; margin:5px 0; background:#000; border:1px solid #333; color:#fff; border-radius:12px; outline:none; }
     </style>
 </head>
 <body>
 
 <div id="login">
     <div class="login-card">
-        <h2 style="color:var(--p-purple); letter-spacing:3px;">MYTHICAL AI</h2>
+        <h2 style="color:var(--p-purple); letter-spacing:3px; margin-bottom:25px;">MYTHICAL AI</h2>
+        
         <button onclick="loginWith('google')" class="auth-btn btn-google">GOOGLE LOGIN</button>
         <button onclick="loginWith('github')" class="auth-btn" style="background:#24292e; color:#fff;">GITHUB LOGIN</button>
+
+        <div style="color:#333; font-size:0.7rem; margin:15px 0;">— OR EMAIL LOGIN —</div>
+        
+        <input id="emailLog" class="auth-input" type="email" placeholder="Email Address">
+        <input id="passLog" class="auth-input" type="password" placeholder="Password">
+        <button onclick="emailLogin()" class="auth-btn btn-email">ENTER VIA EMAIL</button>
+        <p style="font-size: 0.6rem; color: #444; cursor: pointer;" onclick="emailSignUp()">New here? Create Account</p>
     </div>
 </div>
 
@@ -43,7 +54,7 @@
     <span class="logo-text">MYTHICAL AI</span>
     <div style="background:#0A0A0A; padding:15px; border-radius:18px; border:1px solid var(--border);">
         <div style="display: flex; align-items: center; gap: 12px;">
-            <div id="userInit" style="width:36px; height:36px; background:var(--p-purple); border-radius:50%; display:flex; align-items:center; justify-content:center;">?</div>
+            <div id="userInit" style="width:36px; height:36px; background:var(--p-purple); border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold;">?</div>
             <div>
                 <span id="sideName" style="font-size:0.9rem; font-weight:bold;">Guest</span>
                 <span id="userTier" class="tier-badge badge-founder">FOUNDER</span>
@@ -51,6 +62,7 @@
         </div>
     </div>
     <div id="history" style="flex:1; overflow-y:auto; margin-top:20px;"></div>
+    <button onclick="logout()" style="color:#ff4444; background:none; border:none; cursor:pointer; font-size:0.7rem; opacity:0.4;">Logout</button>
 </div>
 
 <div id="main">
@@ -63,53 +75,91 @@
 </div>
 
 <script>
+// --- CONFIG ---
 const SB_URL = "https://mtczyuzbcunsflvcnatf.supabase.co";
 const SB_KEY = "sb_secret_zNmUoxieIHwTqsNusdwNoA_GWLyAmys"; 
 const _supabase = window.supabase.createClient(SB_URL, SB_KEY);
 
+// 1. SOCIAL LOGIN
 async function loginWith(provider) {
-    await _supabase.auth.signInWithOAuth({
+    const { error } = await _supabase.auth.signInWithOAuth({
         provider: provider,
-        options: { redirectTo: window.location.origin }
+        options: { redirectTo: "https://mythicalai.mythicalstudios.online/" }
+    });
+    if (error) alert(error.message);
+}
+
+// 2. EMAIL LOGIN
+async function emailLogin() {
+    const email = document.getElementById("emailLog").value;
+    const password = document.getElementById("passLog").value;
+    const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+    if (error) alert(error.message);
+    else setupUser(data.user);
+}
+
+async function emailSignUp() {
+    const email = document.getElementById("emailLog").value;
+    const password = document.getElementById("passLog").value;
+    const { error } = await _supabase.auth.signUp({ email, password });
+    if (error) alert(error.message);
+    else alert("Account created! Try logging in now.");
+}
+
+// 3. THE "AUTO-CATCH" INITIALIZER
+async function init() {
+    // Check every 500ms for a session (prevents the "stuck" URL issue)
+    const checkInterval = setInterval(async () => {
+        const { data: { session } } = await _supabase.auth.getSession();
+        if (session) {
+            clearInterval(checkInterval);
+            setupUser(session.user);
+        }
+    }, 500);
+
+    // Also listen for changes
+    _supabase.auth.onAuthStateChange((event, session) => {
+        if (session) setupUser(session.user);
     });
 }
 
-async function init() {
-    // FORCE CHECK: Wait for session
-    const { data: { session } } = await _supabase.auth.getSession();
-    
-    if (session) {
-        setupUser(session.user);
-    } else {
-        // LISTENER: If session takes a second to load
-        _supabase.auth.onAuthStateChange((event, session) => {
-            if (session) setupUser(session.user);
-        });
-    }
-}
-
 function setupUser(user) {
-    const name = user.user_metadata.full_name || user.email;
+    const name = user.user_metadata.full_name || user.user_metadata.user_name || user.email;
     localStorage.setItem("myth_name", name);
     
-    // Hide Login
     document.getElementById("login").style.display = "none";
     document.getElementById("sideName").innerText = name;
     document.getElementById("userInit").innerText = name.charAt(0).toUpperCase();
     
-    // Clear the URL token
-    window.history.replaceState({}, document.title, "/");
+    // Clean that long URL token away
+    if (window.location.hash) {
+        window.history.replaceState({}, document.title, "/");
+    }
     
     fetchHistory(name);
 }
 
 async function fetchHistory(name) {
-    const { data } = await _supabase.from('mythical_chats').select('*').eq('owner', name);
+    // SQL MUST HAVE RLS DISABLED FOR THIS TO WORK
+    const { data } = await _supabase.from('mythical_chats').select('*').eq('owner', name).order('created_at', { ascending: false });
     if (data) {
-        document.getElementById("history").innerHTML = data.map(c => `<div class="history-item">💬 ${c.title}</div>`).join('');
+        document.getElementById("history").innerHTML = data.map(c => `
+            <div class="history-item">
+                <i data-lucide="message-square" style="width:14px"></i>
+                ${c.title || "Recent Chat"}
+            </div>
+        `).join('');
+        lucide.createIcons();
     }
 }
 
+async function logout() {
+    await _supabase.auth.signOut();
+    localStorage.clear();
+    location.reload();
+}
+
+lucide.createIcons();
 init();
 </script>
 </body>
