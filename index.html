@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mythical AI | Trinity Portal</title>
+    <title>Mythical AI | Founder Portal</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -39,7 +39,7 @@
         .btn-google { background:#fff; color:#000; }
         .btn-github { background:#24292e; color:#fff; }
         
-        .history-item { padding:12px; color:#555; cursor:pointer; font-size:0.85rem; border-radius: 8px; transition: 0.2s; }
+        .history-item { padding:12px; color:#aaa; cursor:pointer; font-size:0.85rem; border-radius: 8px; transition: 0.2s; display: flex; align-items: center; gap: 8px; }
         .history-item:hover { background: #111; color: #fff; }
         @keyframes msgFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
     </style>
@@ -63,15 +63,13 @@
         </button>
 
         <div style="color:#333; font-size:0.7rem; margin:15px 0;">STAFF ENTRANCE</div>
-
-        <input id="userEmail" type="email" style="width:90%; padding:14px; margin:5px 0; background:#000; border:1px solid #333; color:#fff; border-radius:12px; outline:none;" placeholder="Email">
         <input id="userName" style="width:90%; padding:14px; margin:5px 0; background:#000; border:1px solid #333; color:#fff; border-radius:12px; outline:none;" placeholder="Name" oninput="checkStaff()">
         
         <div id="staff-pass-area" style="display:none;">
             <input id="staffPass" type="password" style="width:90%; padding:14px; background:#000; border:1px solid #FFD700; color:#fff; border-radius:12px;" placeholder="Security Pin">
         </div>
         
-        <button onclick="loginUser()" style="width:100%; padding:14px; background:var(--p-purple); color:#fff; border:none; border-radius:12px; cursor:pointer; font-weight:bold; margin-top:15px;">ENTER PORTAL</button>
+        <button onclick="manualLogin()" style="width:100%; padding:14px; background:var(--p-purple); color:#fff; border:none; border-radius:12px; cursor:pointer; font-weight:bold; margin-top:15px;">ENTER PORTAL</button>
     </div>
 </div>
 
@@ -102,18 +100,13 @@
 </div>
 
 <script>
-// --- CONFIG ---
 const GROQ_KEY = "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";
 const SB_URL = "https://mtczyuzbcunsflvcnatf.supabase.co";
 const SB_KEY = "sb_secret_zNmUoxieIHwTqsNusdwNoA_GWLyAmys"; 
 
 const _supabase = window.supabase.createClient(SB_URL, SB_KEY);
 
-function checkStaff() {
-    const n = document.getElementById("userName").value.toLowerCase();
-    document.getElementById("staff-pass-area").style.display = (n.includes("chethan") || n.includes("thaman") || n.includes("pavan")) ? "block" : "none";
-}
-
+// 1. LOGIN REDIRECTS
 async function loginWith(provider) {
     const { error } = await _supabase.auth.signInWithOAuth({
         provider: provider,
@@ -122,78 +115,69 @@ async function loginWith(provider) {
     if (error) alert(error.message);
 }
 
-async function loginUser() {
-    const email = document.getElementById("userEmail").value.trim();
-    const name = document.getElementById("userName").value.trim();
-    const pass = document.getElementById("staffPass").value.trim();
-    if(!name || !email) return alert("All fields required");
-
-    let tier = "basic";
-    const lowerName = name.toLowerCase();
-    if (lowerName.includes("chethan")) {
-        if (pass !== "Chethan6912") return alert("Wrong Pin");
-        tier = "founder";
-    } else if (lowerName.includes("thaman") || lowerName.includes("pavan")) {
-        if (pass !== "MythicalSv") return alert("Wrong Pin");
-        tier = lowerName.includes("thaman") ? "admin" : "mod";
-    }
-
-    localStorage.setItem("myth_name", name);
-    localStorage.setItem("myth_email", email);
-    localStorage.setItem("myth_tier", tier);
-    renderPortal();
-}
-
-async function logout() {
-    await _supabase.auth.signOut();
-    localStorage.clear();
-    location.reload();
-}
-
+// 2. INITIALIZATION (The "Auto-Catch" Logic)
 async function init() {
-    // Watch for successful cloud login
     _supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === "SIGNED_IN" && session) {
+        if (session) {
             const u = session.user;
             const name = u.user_metadata.full_name || u.user_metadata.user_name || u.email;
+            
             localStorage.setItem("myth_name", name);
             localStorage.setItem("myth_email", u.email);
             
             let tier = "basic";
-            const lowerName = name.toLowerCase();
-            if (lowerName.includes("chethan")) tier = "founder";
-            else if (lowerName.includes("thaman")) tier = "admin";
-            else if (lowerName.includes("pavan")) tier = "mod";
+            const lower = name.toLowerCase();
+            if (lower.includes("chethan")) tier = "founder";
+            else if (lower.includes("thaman")) tier = "admin";
+            else if (lower.includes("pavan")) tier = "mod";
             localStorage.setItem("myth_tier", tier);
             
+            // Success! Hide login & clean URL
+            document.getElementById("login").style.display = "none";
             window.history.replaceState({}, document.title, "/");
-            renderPortal();
+            renderUI();
         }
     });
 
-    if (localStorage.getItem("myth_name")) renderPortal();
+    if (localStorage.getItem("myth_name")) renderUI();
 }
 
-async function renderPortal() {
+async function renderUI() {
     const name = localStorage.getItem("myth_name");
+    const tier = localStorage.getItem("myth_tier") || "basic";
+    
     document.getElementById("login").style.display = "none";
     document.getElementById("sideName").innerText = name;
-    const tier = localStorage.getItem("myth_tier") || "basic";
-    const b = document.getElementById("userTier");
-    b.innerText = tier; b.className = `tier-badge badge-${tier}`;
     document.getElementById("userInit").innerText = name.charAt(0).toUpperCase();
+    
+    const badge = document.getElementById("userTier");
+    badge.innerText = tier;
+    badge.className = `tier-badge badge-${tier}`;
+    
     await fetchCloudHistory();
     newChat();
 }
 
+// 3. HISTORY SYNC
 async function fetchCloudHistory() {
     const name = localStorage.getItem("myth_name");
-    const { data } = await _supabase.from('mythical_chats').select('*').eq('owner', name).order('created_at', { ascending: false });
+    const { data } = await _supabase.from('mythical_chats')
+        .select('*')
+        .eq('owner', name)
+        .order('created_at', { ascending: false });
+
     if (data) {
-        document.getElementById("history").innerHTML = data.map(c => `<div class="history-item" onclick="loadCloudChat('${c.id}')">☁️ ${c.title}</div>`).join('');
+        document.getElementById("history").innerHTML = data.map(c => `
+            <div class="history-item" onclick="loadCloudChat('${c.id}')">
+                <i data-lucide="message-square" style="width:14px"></i>
+                ${c.title}
+            </div>
+        `).join('');
+        lucide.createIcons();
     }
 }
 
+// 4. CORE CHAT LOGIC
 let currentId = null;
 let messages = [];
 
@@ -209,7 +193,7 @@ async function loadCloudChat(id) {
 
 function newChat() {
     currentId = null; messages = [];
-    document.getElementById("chat").innerHTML = `<div style="text-align:center; margin-top:15vh;"><h1>Welcome, ${localStorage.getItem("myth_name")} ✨</h1><p style="color:#444;">Trinity Auth Active.</p></div>`;
+    document.getElementById("chat").innerHTML = `<div style="text-align:center; margin-top:15vh;"><h1>Welcome, ${localStorage.getItem("myth_name")} ✨</h1><p style="color:#444;">Elite Network Cloud Synchronized.</p></div>`;
 }
 
 function addMsg(text, isUser) {
@@ -233,8 +217,8 @@ async function send() {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": "Bearer " + GROQ_KEY },
         body: JSON.stringify({ 
-            model: "llama-3.3-70b-versatile", 
-            messages: [{role: "system", content: "You are Mythical AI by U. Chethan."}, ...messages] 
+            messages: [{role: "system", content: "You are Mythical AI by U. Chethan."}, ...messages],
+            model: "llama-3.3-70b-versatile"
         })
     });
     const data = await res.json();
@@ -250,6 +234,26 @@ async function send() {
         await _supabase.from('mythical_chats').update({ messages: messages }).eq('id', currentId);
     }
     fetchCloudHistory();
+}
+
+function checkStaff() {
+    const n = document.getElementById("userName").value.toLowerCase();
+    document.getElementById("staff-pass-area").style.display = (n.includes("chethan") || n.includes("thaman") || n.includes("pavan")) ? "block" : "none";
+}
+
+async function manualLogin() {
+    const name = document.getElementById("userName").value;
+    const pass = document.getElementById("staffPass").value;
+    if (name.toLowerCase().includes("chethan") && pass !== "Chethan6912") return alert("Wrong Pin");
+    localStorage.setItem("myth_name", name);
+    localStorage.setItem("myth_tier", name.toLowerCase().includes("chethan") ? "founder" : "basic");
+    renderUI();
+}
+
+async function logout() {
+    await _supabase.auth.signOut();
+    localStorage.clear();
+    location.reload();
 }
 
 lucide.createIcons();
