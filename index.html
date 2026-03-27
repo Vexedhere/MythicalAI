@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mythical AI | Official Mythical Network  Product</title>
+    <title>Mythical AI | Trinity Portal</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -151,13 +151,14 @@
         const lowName = name.toLowerCase().trim();
         w.style.display = "flex";
         
-        if (lowName === 'chethan') {
+        // --- 🛡️ FUZZY WELCOME LOGIC ---
+        if (lowName.includes('chethan')) {
             wTitle.innerText = "FOUNDER MODE";
             wSub.innerText = "CHEHTAN: FULL CLEARANCE GRANTED 👑";
-        } else if (lowName === 'thaman') {
+        } else if (lowName.includes('thaman')) {
             wTitle.innerText = "ADMIN MODE";
             wSub.innerText = "THAMAN: SYSTEM PRIVILEGES ACTIVE 🛡️";
-        } else if (lowName === 'pavan') {
+        } else if (lowName.includes('pavan')) {
             wTitle.innerText = "MODERATOR MODE";
             wSub.innerText = "PAVAN: ENFORCEMENT PROTOCOLS READY ⚔️";
         } else {
@@ -173,21 +174,25 @@
 
     function renderApp() {
         document.getElementById("app").style.display = "flex";
-        const name = (localStorage.getItem("myth_name") || "Guest").toLowerCase().trim();
+        const rawName = localStorage.getItem("myth_name") || "Guest";
+        const cleanName = rawName.toLowerCase().trim();
+        
         const dispName = document.getElementById("uName");
         const dispTier = document.getElementById("uTier");
         const avatar = document.getElementById("avatar");
 
-        dispName.innerText = name.toUpperCase();
-        avatar.innerText = name.charAt(0).toUpperCase();
+        dispName.innerText = rawName.toUpperCase();
+        avatar.innerText = rawName.charAt(0).toUpperCase();
 
-        if (name === "chethan") {
+        // --- 🛡️ THE IMPROVED IDENTITY ENGINE ---
+        if (cleanName.includes("chethan")) {
             dispTier.innerText = "FOUNDER";
             dispTier.style.color = "#FFD700";
-        } else if (name === "thaman") {
+            dispTier.style.textShadow = "0 0 10px rgba(255, 215, 0, 0.3)";
+        } else if (cleanName.includes("thaman")) {
             dispTier.innerText = "ADMIN";
             dispTier.style.color = "#00E5FF";
-        } else if (name === "pavan") {
+        } else if (cleanName.includes("pavan")) {
             dispTier.innerText = "MODERATOR";
             dispTier.style.color = "#FF3D00";
         } else {
