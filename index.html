@@ -4,177 +4,221 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mythical AI | Trinity Portal</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --p-purple: #7D2AE8; --dark-bg: #050505; --card-bg: #0D0D0D; --border: #1a1a1a; }
-        body { margin:0; font-family: 'Inter', sans-serif; background:#000; color:#fff; display:flex; height:100vh; overflow: hidden; }
+        :root { --p-purple: #7D2AE8; --dark-bg: #050505; --border: #1a1a1a; --glass: rgba(255, 255, 255, 0.03); }
+        * { box-sizing: border-box; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        body { margin:0; font-family: 'Inter', sans-serif; background:#000; color:#fff; display:flex; height: 100vh; overflow: hidden; }
         
-        /* LOGIN OVERLAY */
-        #login { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:#000; z-index: 3000; }
-        .login-card { background:#0D0D0D; padding:40px; border-radius:30px; border:1px solid #222; text-align:center; width:340px; box-shadow: 0 0 50px rgba(125, 42, 232, 0.1); }
-        .auth-btn { width:100%; padding:14px; border:none; border-radius:12px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:12px; transition: 0.3s; font-family: inherit; }
-        .btn-google { background:#fff; color:#000; }
-        .btn-github { background:#24292e; color:#fff; }
-        .btn-email { background: var(--p-purple); color:#fff; margin-top: 10px; }
-        
-        input.auth-input { width:90%; padding:14px; margin:5px 0; background:#000; border:1px solid #222; color:#fff; border-radius:12px; outline:none; font-family: inherit; }
-        .pass-wrap { position: relative; width: 100%; display: flex; align-items: center; justify-content: center; }
-        .eye-btn { position: absolute; right: 15px; color: #444; cursor: pointer; border:none; background:none; }
+        /* --- 1. LOGIN GATE (Shows First) --- */
+        #login-gate { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:#000; z-index: 9999; }
+        .gate-card { background:#0D0D0D; padding:40px; border-radius:30px; border:1px solid #222; text-align:center; width:min(95%, 380px); }
+        .logo-text { color: var(--p-purple); font-weight: 900; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 20px; }
+        input.gate-input { width:100%; padding:14px; margin:8px 0; background:#000; border:1px solid #222; color:#fff; border-radius:12px; outline:none; }
+        .gate-btn { width:100%; padding:14px; background:var(--p-purple); color:#fff; border:none; border-radius:12px; cursor:pointer; font-weight:bold; margin-top:20px; }
 
-        /* APP LAYOUT */
+        /* --- 2. MAIN APP (Hidden until login) --- */
         #app { display:none; flex:1; height: 100vh; width: 100%; }
-        #sidebar { width:280px; background: var(--dark-bg); padding:20px; display:flex; flex-direction:column; border-right: 1px solid #111; gap: 15px; }
-        .logo-text { color: var(--p-purple); font-weight: 900; font-size: 1.1rem; letter-spacing: 3px; margin-bottom: 10px; }
-        
-        /* STAFF BADGES */
-        .tier-badge { font-size: 0.6rem; padding: 3px 8px; border-radius: 6px; font-weight: bold; margin-top: 4px; display: inline-block; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); }
-        .badge-founder { background: linear-gradient(90deg, #FFD700, #FFA500); color: #000; animation: pulse-gold 2s infinite; }
-        .badge-admin { background: #ff4444; color: #fff; }
-        .badge-mod { background: #00ffcc; color: #000; }
-        @keyframes pulse-gold { 0%, 100% { box-shadow: 0 0 5px rgba(255,215,0,0.3); } 50% { box-shadow: 0 0 15px rgba(255,215,0,0.6); } }
+        #sidebar { width:280px; background: var(--dark-bg); padding:24px; border-right: 1px solid var(--border); display:flex; flex-direction:column; gap: 20px; }
+        #main-content { flex:1; display:flex; flex-direction:column; position: relative; background: #000; }
 
-        /* CHAT AREA */
-        #main { flex:1; display:flex; flex-direction:column; background: #000; position: relative; }
-        #chat { flex:1; overflow-y:auto; padding: 40px 15% 120px 15%; scroll-behavior: smooth; }
-        .msg { max-width: 80%; margin: 20px 0; padding: 16px 22px; border-radius: 20px; line-height: 1.6; font-size: 0.95rem; }
+        /* TOP LOGOUT BAR */
+        .top-bar { height: 60px; display: flex; align-items: center; justify-content: flex-end; padding: 0 30px; border-bottom: 1px solid #111; z-index: 500; }
+        .logout-pill { background: rgba(255,255,255,0.05); border: 1px solid #333; color: #fff; padding: 8px 18px; border-radius: 30px; cursor: pointer; font-size: 0.75rem; display: flex; align-items: center; gap: 10px; }
+        .logout-pill:hover { background: #ff4444; border-color: #ff4444; }
+
+        /* CHAT SYSTEM */
+        #chat { flex:1; overflow-y:auto; padding: 80px 18% 150px 18%; scroll-behavior: smooth; }
+        .msg { max-width: 85%; margin: 24px 0; padding: 18px; border-radius: 20px; line-height: 1.7; font-size: 0.95rem; }
+        .bot { border-left: 2px solid var(--p-purple); color: #ccc; }
         .user { margin-left:auto; background: #111; border: 1px solid #222; }
-        .bot { background: transparent; border-left: 2px solid var(--p-purple); color: #ddd; padding-left: 20px; border-radius: 0; }
+
+        .input-area { position: absolute; bottom: 40px; left: 0; right: 0; padding: 0 18%; }
+        .input-wrap { background: rgba(10,10,10,0.85); backdrop-filter: blur(30px); border: 1px solid #222; border-radius: 40px; padding: 10px 15px 10px 30px; display: flex; align-items: center; }
+        #chat-input { flex:1; background:transparent; border:none; color:#fff; outline:none; }
+
+        /* UPGRADE MODAL */
+        #upgrade-screen { position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 10000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(20px); }
+        .plan-card { background: #0D0D0D; border: 1px solid #222; padding: 35px; border-radius: 35px; width: 340px; text-align: center; margin: 15px; }
+        .plan-card.pro { border-color: var(--p-purple); box-shadow: 0 0 40px rgba(125, 42, 232, 0.2); }
+        .price { font-size: 3rem; font-weight: 900; margin: 15px 0; }
+        .perks { text-align: left; list-style: none; padding: 0; margin-bottom: 25px; font-size: 0.85rem; color: #888; }
+        .perks li { margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+        .buy-btn { width: 100%; padding: 14px; border-radius: 15px; border: none; font-weight: 900; cursor: pointer; text-transform: uppercase; }
+
+        @media (max-width: 768px) { #sidebar { display: none; } #chat { padding: 80px 5%; } .input-area { padding: 0 5%; } }
     </style>
 </head>
 <body>
 
-<div id="login">
-    <div class="login-card">
-        <h2 style="color:var(--p-purple); letter-spacing:3px; margin-bottom:30px; font-weight: 900;">MYTHICAL AI</h2>
-        <button class="auth-btn btn-google" onclick="loginWith('google')">Google Login</button>
-        <button class="auth-btn btn-github" onclick="loginWith('github')">GitHub Login</button>
-        <div style="color:#333; font-size:0.7rem; margin:20px 0;">— STAFF ACCESS —</div>
+<div id="g_id_onload" data-client_id="YOUR_GOOGLE_CLIENT_ID" data-callback="handleGoogle"></div>
+
+<div id="login-gate">
+    <div class="gate-card">
+        <h2 class="logo-text">MYTHICAL AI</h2>
         
-        <input id="staffName" class="auth-input" type="text" placeholder="Your Name">
-        <input id="email" class="auth-input" type="email" placeholder="Email">
+        <div class="g_id_signin" data-type="standard" data-theme="filled_black" style="margin-bottom: 20px; display: flex; justify-content: center;"></div>
+
+        <div style="color:#222; font-size: 0.6rem; margin-bottom: 15px;">— OR MANUAL STAFF ACCESS —</div>
         
-        <div class="pass-wrap">
-            <input id="pass" class="auth-input" type="password" placeholder="Password">
-            <button class="eye-btn" onclick="togglePass()"><i id="eyeIcon" data-lucide="eye" style="width:18px"></i></button>
+        <input id="loginName" class="gate-input" placeholder="Full Name" oninput="checkStaffSense()">
+        <input id="loginEmail" class="gate-input" type="email" placeholder="Email Address">
+        
+        <div id="staff-pin-box" style="display:none;">
+            <p style="font-size: 0.6rem; color: #FFD700; margin: 5px 0; letter-spacing: 1px;">STAFF ENCRYPTION ACTIVE</p>
+            <input id="staffPass" class="gate-input" type="password" placeholder="Staff Security Key">
         </div>
-        <button class="auth-btn btn-email" onclick="emailLogin()">ENTER</button>
-        <p style="font-size: 0.6rem; color: #444; cursor: pointer; margin-top: 10px;" onclick="signup()">New Staff? Register</p>
+
+        <div id="user-pass-box">
+            <input id="userPass" class="gate-input" type="password" placeholder="Password">
+        </div>
+
+        <button class="gate-btn" onclick="executeLogin()">UNLOCK SYSTEM</button>
+    </div>
+</div>
+
+<div id="upgrade-screen">
+    <div style="position: absolute; top: 30px; right: 30px; cursor: pointer;" onclick="toggleUpgrade(false)"><i data-lucide="x-circle" size="35"></i></div>
+    <div class="plan-card">
+        <div style="color:#666; font-size:0.7rem; font-weight:900;">PLUS TIER</div>
+        <div class="price">₹199<span style="font-size: 0.8rem;">/mo</span></div>
+        <ul class="perks">
+            <li><i data-lucide="check" size="14"></i> HD Image Gen (DALL-E 3)</li>
+            <li><i data-lucide="check" size="14"></i> Llama-3.3 Ultra Speed</li>
+            <li><i data-lucide="check" size="14"></i> Math Solver Pro Access</li>
+            <li><i data-lucide="check" size="14"></i> 50GB Cloud Storage</li>
+        </ul>
+        <button class="buy-btn" style="background:#fff; color:#000;" onclick="pay(199, 'Plus')">GET PLUS</button>
+    </div>
+    <div class="plan-card pro">
+        <div style="color:var(--p-purple); font-size:0.7rem; font-weight:900;">PRO TIER</div>
+        <div class="price">₹399<span style="font-size: 0.8rem;">/mo</span></div>
+        <ul class="perks">
+            <li><i data-lucide="zap" size="14"></i> 4K AI Video Gen (Sora)</li>
+            <li><i data-lucide="zap" size="14"></i> Custom AI Voice Cloning</li>
+            <li><i data-lucide="zap" size="14"></i> Unlimited 4K Image Creation</li>
+            <li><i data-lucide="zap" size="14"></i> Mythical Server API Keys</li>
+        </ul>
+        <button class="buy-btn" style="background:var(--p-purple); color:#fff;" onclick="pay(399, 'Pro')">GET PRO</button>
     </div>
 </div>
 
 <div id="app">
     <div id="sidebar">
         <div class="logo-text">MYTHICAL AI</div>
-        <div style="background:#0A0A0A; padding:15px; border-radius:18px; border:1px solid #111;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <div id="userInit" style="width:36px; height:36px; background:var(--p-purple); border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold;">?</div>
-                <div>
-                    <div id="userNameDisp" style="font-size:0.85rem; font-weight:bold;">User</div>
-                    <span id="userTier" class="tier-badge">BASIC</span>
-                </div>
+        <button onclick="location.reload()" style="background:transparent; border:none; color:#fff; cursor:pointer; text-align:left;"><i data-lucide="plus"></i> New Thread</button>
+        
+        <div style="background: #0D0D0D; border: 1px solid #222; padding: 25px; border-radius: 25px; margin-top: auto; text-align: center;">
+            <p style="font-size: 0.75rem;">Unlock Image & Video</p>
+            <button class="gate-btn" style="margin-top: 10px; font-size: 0.7rem;" onclick="toggleUpgrade(true)">UPGRADE NOW</button>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 10px; padding-top: 10px; border-top: 1px solid #111;">
+            <div id="avatar" style="width: 35px; height: 35px; background: var(--p-purple); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">?</div>
+            <div>
+                <div id="uName" style="font-size: 0.85rem; font-weight: bold;">User</div>
+                <div id="uTier" style="font-size: 0.65rem; color: #FFD700; font-weight: 800;">BASIC</div>
             </div>
         </div>
-        <button onclick="logout()" style="margin-top:auto; color:red; background:none; border:none; cursor:pointer;">Terminate Session</button>
     </div>
-    <div id="main">
-        <div id="chat"></div>
+
+    <div id="main-content">
+        <div class="top-bar">
+            <div class="logout-pill" onclick="logout()">
+                <i data-lucide="log-out" size="14"></i> Log out
+            </div>
+        </div>
+        <div id="chat">
+            <div class="msg bot">Mythical Cloud Synchronized. Ready for instructions, Founder.</div>
+        </div>
+        <div class="input-area">
+            <div class="input-wrap">
+                <input id="chat-input" placeholder="Transmit transmission..." onkeydown="if(event.key==='Enter') send()">
+                <button onclick="send()" style="background:#fff; border:none; width:45px; height:45px; border-radius:50%; cursor:pointer;"><i data-lucide="arrow-up" color="#000" size="20"></i></button>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
-// 🔐 YOUR CONFIG
-const SB_URL = "https://mtczyuzbcunsflvcnatf.supabase.co";
-const SB_KEY = "sb_secret_zNmUoxieIHwTqsNusdwNoA_GWLyAmys"; 
-const supabase = window.supabase.createClient(SB_URL, SB_KEY);
+    const GROQ_KEY = "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";
+    const staffDB = { "chethan": "C@MN", "thaman": "T@MN", "pavan": "P@MN" };
 
-// 👁️ PASS TOGGLE
-function togglePass() {
-    const p = document.getElementById("pass");
-    const icon = document.getElementById("eyeIcon");
-    p.type = p.type === "password" ? "text" : "password";
-    icon.setAttribute("data-lucide", p.type === "password" ? "eye" : "eye-off");
-    lucide.createIcons();
-}
-
-// 🔑 AUTH LOGIC
-async function loginWith(provider){
-    await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: window.location.href } });
-}
-
-async function emailLogin(){
-    const {data, error} = await supabase.auth.signInWithPassword({ 
-        email: document.getElementById("email").value, 
-        password: document.getElementById("pass").value 
-    });
-    if(error) alert(error.message);
-    else setupUI(data.user);
-}
-
-async function signup(){
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("pass").value;
-    const name = document.getElementById("staffName").value;
-    const {error} = await supabase.auth.signUp({ 
-        email, 
-        password, 
-        options: { data: { full_name: name } } 
-    });
-    if(error) alert(error.message);
-    else alert("Success! Log in now.");
-}
-
-// 👤 THE "STAFF RECOGNITION" ENGINE
-function setupUI(user){
-    document.getElementById("login").style.display = "none";
-    document.getElementById("app").style.display = "flex";
-
-    // Priority: Metadata Name > Manual Name Field > Email
-    const name = user.user_metadata?.full_name || 
-                 document.getElementById("staffName").value || 
-                 user.email.split('@')[0];
-
-    document.getElementById("userNameDisp").innerText = name;
-    document.getElementById("userInit").innerText = name.charAt(0).toUpperCase();
-
-    const badge = document.getElementById("userTier");
-    const lower = name.toLowerCase();
-    
-    // 🔥 Staff Logic Trigger
-    if(lower.includes("chethan")) { 
-        badge.innerText="FOUNDER"; 
-        badge.className="tier-badge badge-founder"; 
-    }
-    else if(lower.includes("thaman")) { 
-        badge.innerText="ADMIN"; 
-        badge.className="tier-badge badge-admin"; 
-    }
-    else if(lower.includes("pavan")) { 
-        badge.innerText="MODERATOR"; 
-        badge.className="tier-badge badge-mod"; 
-    } else {
-        badge.innerText="STAFF";
-        badge.className="tier-badge";
+    // --- LOGOUT ENGINE ---
+    function logout() {
+        localStorage.removeItem("myth_auth");
+        localStorage.removeItem("myth_name");
+        localStorage.removeItem("myth_tier");
+        location.reload(); // Force refresh to show login-gate
     }
 
-    if(window.location.hash) window.history.replaceState({}, document.title, window.location.pathname);
-}
+    // --- STAFF SENSING ---
+    function checkStaffSense() {
+        const name = document.getElementById("loginName").value.toLowerCase().trim();
+        const isStaff = !!staffDB[name];
+        document.getElementById("staff-pin-box").style.display = isStaff ? "block" : "none";
+        document.getElementById("user-pass-box").style.display = isStaff ? "none" : "block";
+    }
 
-// 🚀 INITIALIZE
-async function init(){
-    const { data: { session } } = await supabase.auth.getSession();
-    if(session) setupUI(session.user);
-    supabase.auth.onAuthStateChange((event, session) => { if(session) setupUI(session.user); });
-}
+    // --- LOGIN LOGIC ---
+    function executeLogin() {
+        const name = document.getElementById("loginName").value.toLowerCase().trim();
+        if (staffDB[name]) {
+            if (document.getElementById("staffPass").value === staffDB[name]) loginSuccess(name, "FOUNDER");
+            else alert("INVALID KEY");
+        } else {
+            const email = document.getElementById("loginEmail").value;
+            if (email.includes("@")) loginSuccess(name || "Guest", "BASIC TIER");
+            else alert("Enter valid email");
+        }
+    }
 
-async function logout(){
-    await supabase.auth.signOut();
-    localStorage.clear();
-    location.reload();
-}
+    function handleGoogle(response) {
+        const payload = JSON.parse(atob(response.credential.split('.')[1]));
+        loginSuccess(payload.name, "BASIC TIER");
+    }
 
-lucide.createIcons();
-init();
+    function loginSuccess(name, tier) {
+        localStorage.setItem("myth_auth", "true");
+        localStorage.setItem("myth_name", name);
+        localStorage.setItem("myth_tier", tier);
+        renderApp();
+    }
+
+    function renderApp() {
+        document.getElementById("login-gate").style.display = "none";
+        document.getElementById("app").style.display = "flex";
+        document.getElementById("uName").innerText = localStorage.getItem("myth_name").toUpperCase();
+        document.getElementById("avatar").innerText = localStorage.getItem("myth_name").charAt(0).toUpperCase();
+        document.getElementById("uTier").innerText = localStorage.getItem("myth_tier");
+    }
+
+    function toggleUpgrade(s) { document.getElementById("upgrade-screen").style.display = s ? "flex" : "none"; }
+
+    function pay(amt, plan) {
+        window.location.href = `upi://pay?pa=bargavi124@ybl&pn=Mythical%20AI&am=${amt}&tn=Upgrade%20to%20${plan}&cu=INR`;
+    }
+
+    async function send() {
+        const i = document.getElementById("chat-input");
+        const t = i.value.trim(); if(!t) return;
+        const c = document.getElementById("chat");
+        c.innerHTML += `<div class="msg user">${t}</div>`;
+        i.value = "";
+        try {
+            const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: { "Authorization": `Bearer ${GROQ_KEY}`, "Content-Type": "application/json" },
+                body: JSON.stringify({ model: "llama-3.3-70b-versatile", messages: [{role: "user", content: t}] })
+            });
+            const d = await r.json();
+            c.innerHTML += `<div class="msg bot">${d.choices[0].message.content}</div>`;
+        } catch(e) { c.innerHTML += `<div class="msg bot">Connection Error.</div>`; }
+        c.scrollTop = c.scrollHeight;
+    }
+
+    window.onload = () => { if(localStorage.getItem("myth_auth")) renderApp(); lucide.createIcons(); };
 </script>
 </body>
 </html>
