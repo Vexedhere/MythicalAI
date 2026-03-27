@@ -17,16 +17,23 @@
         /* BADGES */
         .tier-badge { font-size: 0.6rem; padding: 3px 8px; border-radius: 6px; font-weight: bold; margin-left: 8px; text-transform: uppercase; letter-spacing: 1px; }
         .badge-basic { background: #222; color: #888; border: 1px solid #333; }
-        .badge-plus { background: #00c8ff; color: #000; }
-        .badge-pro { background: var(--p-purple); color: #fff; animation: pulse-purple 2s infinite; }
+        .badge-plus { background: #00c8ff; color: #000; box-shadow: 0 0 10px rgba(0,200,255,0.4); }
+        .badge-pro { background: var(--p-purple); color: #fff; animation: pulse-purple 2s infinite; border: 1px solid rgba(255,255,255,0.2); }
         .badge-founder { background: linear-gradient(90deg, #FFD700, #FFA500); color: #000; animation: pulse-gold 2s infinite; border: 1px solid #FFF; }
 
         @keyframes pulse-gold { 0%, 100% { box-shadow: 0 0 5px rgba(255,215,0,0.4); } 50% { box-shadow: 0 0 20px rgba(255,215,0,0.8); } }
         @keyframes pulse-purple { 0%, 100% { box-shadow: 0 0 5px rgba(125,42,232,0.4); } 50% { box-shadow: 0 0 20px rgba(125,42,232,0.8); } }
 
+        /* PRICING PAGE */
+        #pricing-page { position: fixed; inset: 0; background: rgba(0,0,0,0.98); backdrop-filter: blur(15px); z-index: 2000; display: none; padding: 40px; overflow-y: auto; text-align: center; }
+        .plan-card { background: #0D0D0D; border: 1px solid #222; padding: 30px; border-radius: 28px; width: 280px; text-align: left; transition: 0.3s; position: relative; }
+        .plan-card:hover { transform: translateY(-10px); border-color: var(--p-purple); }
+        .plan-price { font-size: 2.2rem; font-weight: 800; color: #fff; margin: 15px 0; }
+        .plan-price span { font-size: 0.9rem; color: #444; }
+
         /* INPUT PILL */
         .input-container { position: absolute; bottom: 35px; left: 0; right: 0; display: flex; justify-content: center; z-index: 100; }
-        .input-wrapper { width: 65%; background: rgba(15,15,15,0.8); backdrop-filter: blur(20px); border-radius: 50px; padding: 8px 12px 8px 25px; display: flex; align-items: center; border: 1px solid #222; }
+        .input-wrapper { width: 65%; background: rgba(15,15,15,0.8); backdrop-filter: blur(20px); border-radius: 50px; padding: 8px 12px 8px 25px; display: flex; align-items: center; border: 1px solid #222; box-shadow: 0 0 25px rgba(125,42,232,0.1); }
         #input { flex:1; background:transparent; border:none; color:#fff; outline:none; font-size: 1rem; padding: 12px 0; }
         
         /* CHAT */
@@ -50,7 +57,7 @@
         <h2 style="color:var(--p-purple); letter-spacing:3px;">MYTHICAL AI</h2>
         <input id="userName" style="width:90%; padding:15px; margin:10px 0; background:#000; border:1px solid #333; color:#fff; border-radius:14px; outline:none;" placeholder="Enter Name" oninput="checkFounder()">
         <input id="userEmail" type="email" style="width:90%; padding:15px; margin:10px 0; background:#000; border:1px solid #333; color:#fff; border-radius:14px; outline:none;" placeholder="Email Address">
-        <div id="f-pass" style="display:none; margin-top:10px; border-top: 1px solid #222; padding-top: 10px;">
+        <div id="f-pass" style="display:none; margin-top:10px; border-top:1px solid #222; padding-top:10px;">
             <input id="founderPass" type="password" style="width:90%; padding:15px; background:#000; border:1px solid #FFD700; color:#fff; border-radius:14px;" placeholder="Founder Pin">
         </div>
         <button onclick="loginUser()" style="width:100%; padding:15px; background:var(--p-purple); color:#fff; border:none; border-radius:14px; cursor:pointer; font-weight:bold; margin-top:15px;">LOGIN</button>
@@ -76,55 +83,87 @@
         </div>
     </div>
 
+    <div id="upg-box" style="background:#0A0A0A; padding:15px; border-radius:18px; border:1px solid var(--border);">
+        <button onclick="togglePricing(true)" style="width:100%; padding:10px; background:var(--p-purple); border:none; border-radius:10px; color:#fff; font-size:0.75rem; font-weight:bold; cursor:pointer;">UPGRADE PLAN ⚡</button>
+    </div>
+
     <button onclick="newChat()" style="width:100%; padding:12px; background:transparent; border:1px solid #222; color:#fff; border-radius:12px; cursor:pointer; margin-top: 10px;">+ New AI Thread</button>
     <div id="history" style="flex:1; overflow-y:auto; margin:10px 0;"></div>
     <button onclick="localStorage.clear(); location.reload();" style="color:#ff4444; background:none; border:none; cursor:pointer; font-size:0.7rem; opacity:0.4;">Logout</button>
+</div>
+
+<div id="pricing-page">
+    <button style="position:absolute; top:30px; right:40px; background:#111; color:#fff; border:1px solid #333; padding:12px 20px; border-radius:14px; cursor:pointer;" onclick="togglePricing(false)">✕ Close</button>
+    <div style="margin-top:60px;">
+        <h1>Elevate Your Mythical AI ⚡</h1>
+        <div style="display:flex; justify-content:center; gap:25px; flex-wrap:wrap; margin-top: 40px;">
+            
+            <div class="plan-card">
+                <h3 style="color:#00c8ff; margin:0;">MYTHICAL PLUS</h3>
+                <div class="plan-price">₹199<span>/mo</span></div>
+                <ul style="padding:0; list-style:none; font-size:0.85rem; color:#888; line-height:2.2;">
+                    <li>✅ Fast Response Times</li>
+                    <li>✅ High-Res Image Generation</li>
+                    <li>✅ Access to GPT-4o Mini</li>
+                    <li>✅ Plus Badge Unlocked</li>
+                </ul>
+                <a href="upi://pay?pa=bhargavi1204@ybl&am=199" onclick="activateTier('plus')" style="display:block; text-align:center; padding:15px; background:#fff; color:#000; border-radius:14px; font-weight:bold; text-decoration:none; margin-top:20px;">ACTIVATE PLUS</a>
+            </div>
+
+            <div class="plan-card" style="border-color:var(--p-purple);">
+                <div style="position:absolute; top:-15px; right:20px; background:var(--p-purple); color:white; padding:5px 15px; border-radius:20px; font-size:0.7rem; font-weight:bold;">FOUNDER'S CHOICE</div>
+                <h3 style="color:var(--p-purple); margin:0;">MYTHICAL PRO 👑</h3>
+                <div class="plan-price">₹399<span>/mo</span></div>
+                <ul style="padding:0; list-style:none; font-size:0.85rem; color:#888; line-height:2.2;">
+                    <li>✅ <b>Ultra-Core Llama 3.3 (70B)</b></li>
+                    <li>✅ 4K Hyper-Real Image Gen</li>
+                    <li>✅ <b>AI Video Generation (2m)</b></li>
+                    <li>✅ Animated Pro Badge</li>
+                    <li>✅ Priority Developer Support</li>
+                </ul>
+                <a href="upi://pay?pa=bhargavi1204@ybl&am=399" onclick="activateTier('pro')" style="display:block; text-align:center; padding:15px; background:var(--p-purple); color:#fff; border-radius:14px; font-weight:bold; text-decoration:none; margin-top:20px;">ACTIVATE PRO</a>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div id="main">
     <div id="chat"></div>
     <div class="input-container">
         <div class="input-wrapper">
-            <input id="input" placeholder="Ask Mythical AI..." onkeydown="if(event.key==='Enter') send()">
+            <input id="input" placeholder="Ask Mythical AI anything..." onkeydown="if(event.key==='Enter') send()">
             <button onclick="send()" style="background:var(--p-purple); color:white; border:none; width:45px; height:45px; border-radius:50%; cursor:pointer;"><i data-lucide="arrow-up" size="22"></i></button>
         </div>
     </div>
 </div>
 
 <script>
+// MAKE SURE THIS IS YOUR ACTIVE GROQ API KEY
 const GROQ_KEY = "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";
 
 function toggleSidebar() { document.getElementById("sidebar").classList.toggle("closed"); }
-
+function togglePricing(show) { document.getElementById("pricing-page").style.display = show ? "block" : "none"; }
 function checkFounder() {
     const n = document.getElementById("userName").value.toLowerCase();
     document.getElementById("f-pass").style.display = n.includes("chethan") ? "block" : "none";
 }
 
-// EMAIL VALIDATION FUNCTION
-function validateEmail(email) {
-    return email.includes("@") && email.includes(".");
-}
+function validateEmail(email) { return email.includes("@") && email.includes("."); }
+function activateTier(tier) { localStorage.setItem("myth_tier", tier); init(); }
 
 function loginUser() {
     const name = document.getElementById("userName").value.trim();
     const mail = document.getElementById("userEmail").value.trim();
     const pass = document.getElementById("founderPass").value.trim();
-
-    // 1. Check if empty
+    
     if(!name || !mail) { alert("Please enter both Name and Email."); return; }
-
-    // 2. Validate Email format
-    if(!validateEmail(mail)) { alert("Please enter a valid email address (example@gmail.com)"); return; }
-
-    // 3. Founder Check
+    if(!validateEmail(mail)) { alert("Please enter a valid email address."); return; }
+    
     if (name.toLowerCase().includes("chethan")) {
         if (pass !== "Chethan6912") { alert("Access Denied. Founder Pin Incorrect."); return; }
         localStorage.setItem("myth_tier", "founder");
-    } else { 
-        localStorage.setItem("myth_tier", "basic"); 
-    }
-
+    } else { localStorage.setItem("myth_tier", "basic"); }
+    
     localStorage.setItem("myth_name", name); 
     localStorage.setItem("myth_mail", mail); 
     init();
@@ -141,22 +180,22 @@ function init() {
         const b = document.getElementById("userTier");
         b.innerText = tier;
         b.className = `tier-badge badge-${tier}`;
+        if(tier === "founder") document.getElementById("upg-box").style.display = "none";
         document.getElementById("login").style.display = "none";
         renderHist(); newChat();
     }
 }
 
 let messages = [];
-
 function renderHist() {
     const box = document.getElementById("history");
     const user = localStorage.getItem("myth_name");
-    let h = JSON.parse(localStorage.getItem("myth_ai_v16") || "[]");
+    let h = JSON.parse(localStorage.getItem("myth_ai_v18") || "[]");
     box.innerHTML = h.filter(i => i.owner === user).map(c => `<div style="padding:12px; color:#555; cursor:pointer; font-size:0.85rem;" onclick="loadChat('${c.id}')">🤖 ${c.title}</div>`).join('');
 }
 
 function loadChat(id) {
-    let h = JSON.parse(localStorage.getItem("myth_ai_v16") || "[]");
+    let h = JSON.parse(localStorage.getItem("myth_ai_v18") || "[]");
     const c = h.find(i => i.id === id);
     if(c) {
         messages = c.messages;
@@ -168,7 +207,13 @@ function loadChat(id) {
 function newChat() {
     messages = [];
     const name = localStorage.getItem("myth_name") || "User";
-    document.getElementById("chat").innerHTML = `<div style="text-align:center; margin-top:15vh;"><h1>Welcome, ${name} ✨</h1><p style="color:#444;">Mythical AI Core Online.</p></div>`;
+    
+    // DATE CHECKER FOR RAMA NAVAMI (UI SIDE)
+    const d = new Date();
+    const isRamaNavami = (d.getMonth() === 2 && d.getDate() === 27); // Month 2 is March
+    const festiveMessage = isRamaNavami ? `<h3 style="color:#FFD700; margin: 5px 0;">🏹 Happy Sri Rama Navami!</h3>` : "";
+
+    document.getElementById("chat").innerHTML = `<div style="text-align:center; margin-top:15vh;"><h1>Welcome, ${name} ✨</h1>${festiveMessage}<p style="color:#444;">Mythical AI Core Online.</p></div>`;
 }
 
 function addMsg(text, isUser) {
@@ -191,6 +236,11 @@ async function send() {
     messages.push({role: "user", content: text});
     input.value = "";
 
+    // DATE CHECKER FOR THE AI PROMPT (ANTI-SPAM)
+    const d = new Date();
+    const isRamaNavami = (d.getMonth() === 2 && d.getDate() === 27);
+    const festivePrompt = isRamaNavami ? " Context: Today is Sri Rama Navami. Wish them a happy festival ONLY in your very first reply of this conversation. DO NOT repeat the greeting in subsequent messages. 🏹✨" : "";
+
     try {
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
@@ -198,7 +248,10 @@ async function send() {
             body: JSON.stringify({ 
                 model: "llama-3.3-70b-versatile", 
                 messages: [
-                    {role: "system", content: `You are Mythical AI. Owner: U. Chethan. Father: Rangaswamy. Mother: Bhargavi. Sister: Sudhishna. You are currently talking to: ${currentUserName}. Address them by their name if they ask who they are. Use emojis. ✨`}, 
+                    {
+                        role: "system", 
+                        content: `You are Mythical AI by Mythical Studios. Owner: U. Chethan. Father: Rangaswamy. Mother: Bhargavi. Sister: Sudhishna. Best Friends: Pavan and Thaman. School: The Hyderabad Public School Kadapa. Principal: Amit Singh. No Minecraft. High-tech & Professional. You are currently talking to: ${currentUserName}. Address them by their name. ✨` + festivePrompt
+                    }, 
                     ...messages
                 ] 
             })
@@ -209,12 +262,12 @@ async function send() {
         messages.push({role: "assistant", content: reply});
 
         if(messages.length === 2) {
-            let h = JSON.parse(localStorage.getItem("myth_ai_v16") || "[]");
+            let h = JSON.parse(localStorage.getItem("myth_ai_v18") || "[]");
             h.unshift({ id: Date.now().toString(), owner: currentUserName, title: text.substring(0,18), messages: [...messages] });
-            localStorage.setItem("myth_ai_v16", JSON.stringify(h));
+            localStorage.setItem("myth_ai_v18", JSON.stringify(h));
             renderHist();
         }
-    } catch { addMsg("ERR: Sync Failed. 🛑", false); }
+    } catch { addMsg("ERR: Sync Failed. Please check API Key.", false); }
 }
 
 lucide.createIcons();
