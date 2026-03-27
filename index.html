@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mythical AI | Professional Cloud Portal</title>
+    <title>Mythical AI | Founder Portal</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --p-purple: #7D2AE8; --dark-bg: #050505; --card-bg: #0D0D0D; --border: #1a1a1a; }
         body { margin:0; font-family: 'Inter', sans-serif; background:#000; color:#fff; display:flex; height: 100vh; overflow: hidden; }
         
+        /* Sidebar */
         #sidebar { width:300px; background: var(--dark-bg); padding:20px; display:flex; flex-direction:column; border-right: 1px solid #111; gap: 12px; transition: 0.4s ease; position: relative; z-index: 1000; }
         #sidebar.closed { width: 0; padding: 0; overflow: hidden; border: none; }
         .logo-text { color: var(--p-purple); font-weight: 900; font-size: 1.2rem; letter-spacing: 3px; }
 
+        /* Badges */
         .tier-badge { font-size: 0.6rem; padding: 3px 8px; border-radius: 6px; font-weight: bold; margin-left: 8px; text-transform: uppercase; }
         .badge-basic { background: #222; color: #888; border: 1px solid #333; }
         .badge-founder { background: linear-gradient(90deg, #FFD700, #FFA500); color: #000; animation: pulse-gold 2s infinite; border: 1px solid #FFF; }
@@ -22,27 +24,29 @@
 
         @keyframes pulse-gold { 0%, 100% { box-shadow: 0 0 5px rgba(255,215,0,0.4); } 50% { box-shadow: 0 0 20px rgba(255,215,0,0.8); } }
 
+        /* Chat UI */
         #main { flex:1; display:flex; flex-direction:column; position: relative; }
         #chat { flex:1; overflow-y:auto; padding: 80px 15% 150px 15%; scroll-behavior: smooth; }
         .msg { max-width: 80%; margin: 20px 0; padding: 18px 24px; border-radius: 24px; animation: msgFade 0.4s ease; line-height: 1.6; }
         .user { margin-left:auto; background: #111; border: 1px solid #222; }
         .bot { background: transparent; border-left: 2px solid var(--p-purple); padding-left: 25px; color: #ddd; }
 
+        /* Input Section */
         .input-container { position: absolute; bottom: 35px; left: 0; right: 0; display: flex; justify-content: center; z-index: 100; }
         .input-wrapper { width: 65%; background: rgba(15,15,15,0.8); backdrop-filter: blur(20px); border-radius: 50px; padding: 8px 12px 8px 25px; display: flex; align-items: center; border: 1px solid #222; }
         #input { flex:1; background:transparent; border:none; color:#fff; outline:none; font-size: 1rem; padding: 12px 0; }
         
+        /* Login UI */
         #login { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:#000; z-index: 3000; }
         .login-card { background:#0D0D0D; padding:40px; border-radius:30px; border:1px solid #222; text-align:center; width:340px; }
+        .auth-btn { width:100%; padding:14px; border:none; border-radius:12px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:10px; transition: 0.2s ease; }
+        .btn-google { background:#fff; color:#000; }
+        .btn-github { background:#24292e; color:#fff; }
+        .auth-btn:hover { opacity: 0.9; transform: scale(1.02); }
         
         .history-item { padding:12px; color:#555; cursor:pointer; font-size:0.85rem; border-radius: 8px; transition: 0.2s; }
         .history-item:hover { background: #111; color: #fff; }
         @keyframes msgFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
-        
-        .auth-btn { width:100%; padding:14px; border:none; border-radius:12px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:10px; transition: 0.3s; }
-        .btn-google { background:#fff; color:#000; }
-        .btn-github { background:#24292e; color:#fff; }
-        .auth-btn:hover { opacity: 0.8; transform: scale(1.02); }
     </style>
 </head>
 <body>
@@ -56,17 +60,17 @@
         <h2 style="color:var(--p-purple); letter-spacing:3px; margin-bottom:25px;">MYTHICAL AI</h2>
         
         <button onclick="loginWith('google')" class="auth-btn btn-google">
-            <img src="https://www.google.com/favicon.ico" width="18"> SIGN IN WITH GOOGLE
+            <img src="https://www.google.com/favicon.ico" width="18"> GOOGLE LOGIN
         </button>
 
         <button onclick="loginWith('github')" class="auth-btn btn-github">
-            <i data-lucide="github" size="18"></i> SIGN IN WITH GITHUB
+            <i data-lucide="github" size="18"></i> GITHUB LOGIN
         </button>
 
-        <div style="color:#333; font-size:0.7rem; margin:15px 0; text-transform: uppercase; letter-spacing: 1px;">Staff Access</div>
+        <div style="color:#333; font-size:0.75rem; margin:15px 0;">OR MANUAL STAFF ENTRY</div>
 
         <input id="userEmail" type="email" style="width:90%; padding:14px; margin:5px 0; background:#000; border:1px solid #333; color:#fff; border-radius:12px; outline:none;" placeholder="Email">
-        <input id="userName" style="width:90%; padding:14px; margin:5px 0; background:#000; border:1px solid #333; color:#fff; border-radius:12px; outline:none;" placeholder="Name" oninput="checkStaff()">
+        <input id="userName" style="width:90%; padding:14px; margin:5px 0; background:#000; border:1px solid #333; color:#fff; border-radius:12px; outline:none;" placeholder="Full Name" oninput="checkStaff()">
         
         <div id="staff-pass-area" style="display:none;">
             <input id="staffPass" type="password" style="width:90%; padding:14px; background:#000; border:1px solid #FFD700; color:#fff; border-radius:12px;" placeholder="Security Pin">
@@ -87,7 +91,7 @@
             </div>
         </div>
     </div>
-    <button onclick="newChat()" style="width:100%; padding:12px; background:transparent; border:1px solid #222; color:#fff; border-radius:12px; cursor:pointer; margin-top:10px;">+ New Cloud Thread</button>
+    <button onclick="newChat()" style="width:100%; padding:12px; background:transparent; border:1px solid #222; color:#fff; border-radius:12px; cursor:pointer; margin-top:10px;">+ New Thread</button>
     <div id="history" style="flex:1; overflow-y:auto; margin:10px 0;"></div>
     <button onclick="logout()" style="color:#ff4444; background:none; border:none; cursor:pointer; font-size:0.7rem; opacity:0.4;">Logout System</button>
 </div>
@@ -103,6 +107,7 @@
 </div>
 
 <script>
+// --- CORE CONFIG ---
 const GROQ_KEY = "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";
 const SB_URL = "https://mtczyuzbcunsflvcnatf.supabase.co";
 const SB_KEY = "sb_secret_zNmUoxieIHwTqsNusdwNoA_GWLyAmys"; 
@@ -117,7 +122,7 @@ function checkStaff() {
 async function loginWith(provider) {
     const { error } = await _supabase.auth.signInWithOAuth({
         provider: provider,
-        options: { redirectTo: window.location.href }
+        options: { redirectTo: window.location.origin }
     });
     if (error) alert(error.message);
 }
@@ -126,7 +131,7 @@ async function loginUser() {
     const email = document.getElementById("userEmail").value.trim();
     const name = document.getElementById("userName").value.trim();
     const pass = document.getElementById("staffPass").value.trim();
-    if(!name || !email) return alert("All fields required");
+    if(!name || !email) return alert("Email and Name required");
 
     let tier = "basic";
     const lowerName = name.toLowerCase();
@@ -155,11 +160,12 @@ async function init() {
     
     if (session) {
         const u = session.user;
-        localStorage.setItem("myth_name", u.user_metadata.full_name || u.user_metadata.user_name || u.email);
+        const name = u.user_metadata.full_name || u.user_metadata.user_name || u.email;
+        localStorage.setItem("myth_name", name);
         localStorage.setItem("myth_email", u.email);
         
         let tier = "basic";
-        const lowerName = (localStorage.getItem("myth_name")).toLowerCase();
+        const lowerName = name.toLowerCase();
         if (lowerName.includes("chethan")) tier = "founder";
         else if (lowerName.includes("thaman")) tier = "admin";
         else if (lowerName.includes("pavan")) tier = "mod";
@@ -204,7 +210,7 @@ async function loadCloudChat(id) {
 
 function newChat() {
     currentId = null; messages = [];
-    document.getElementById("chat").innerHTML = `<div style="text-align:center; margin-top:15vh;"><h1>Welcome, ${localStorage.getItem("myth_name")} ✨</h1><p style="color:#444;">Elite Network Synchronized.</p></div>`;
+    document.getElementById("chat").innerHTML = `<div style="text-align:center; margin-top:15vh;"><h1>Welcome, ${localStorage.getItem("myth_name")} ✨</h1><p style="color:#444;">Cloud Core Synchronized.</p></div>`;
 }
 
 function addMsg(text, isUser) {
@@ -229,7 +235,7 @@ async function send() {
         headers: { "Content-Type": "application/json", "Authorization": "Bearer " + GROQ_KEY },
         body: JSON.stringify({ 
             model: "llama-3.3-70b-versatile", 
-            messages: [{role: "system", content: "You are Mythical AI by U. Chethan. Be brief and elite."}, ...messages] 
+            messages: [{role: "system", content: "You are Mythical AI by U. Chethan. Professional and high-tech."}, ...messages] 
         })
     });
     const data = await res.json();
