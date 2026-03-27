@@ -10,257 +10,167 @@
         :root { --p-purple: #7D2AE8; --dark-bg: #050505; --card-bg: #0D0D0D; --border: #1a1a1a; }
         body { margin:0; font-family: 'Inter', sans-serif; background:#000; color:#fff; display:flex; height:100vh; overflow: hidden; }
         
-        /* SIDEBAR */
-        #sidebar { width:300px; background: var(--dark-bg); padding:20px; display:flex; flex-direction:column; border-right: 1px solid #111; gap: 12px; z-index: 1000; }
-        .logo-text { color: var(--p-purple); font-weight: 900; font-size: 1.2rem; letter-spacing: 3px; margin-bottom: 10px; }
-
-        /* TIERS */
-        .tier-badge { font-size: 0.6rem; padding: 3px 8px; border-radius: 6px; font-weight: bold; margin-left: 8px; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); }
-        .badge-founder { background: linear-gradient(90deg, #FFD700, #FFA500); color: #000; animation: pulse-gold 2s infinite; }
-        .badge-admin { background: #ff0044; color: #fff; }
-        .badge-mod { background: #00ffcc; color: #000; }
-        .badge-basic { background: #222; color: #888; }
-
-        @keyframes pulse-gold { 0%, 100% { box-shadow: 0 0 5px rgba(255,215,0,0.3); } 50% { box-shadow: 0 0 15px rgba(255,215,0,0.6); } }
-
-        #history { flex:1; overflow-y:auto; margin-top: 10px; }
-        .history-item { padding:12px; color:#666; cursor:pointer; font-size:0.85rem; border-radius: 8px; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
-        .history-item:hover { background: #111; color: #fff; }
-
-        /* CHAT */
-        #main { flex:1; display:flex; flex-direction:column; position: relative; }
-        #chat { flex:1; overflow-y:auto; padding: 80px 15% 150px 15%; scroll-behavior: smooth; }
-        .msg { max-width: 80%; margin: 20px 0; padding: 18px 24px; border-radius: 24px; line-height: 1.6; }
-        .user { margin-left:auto; background: #111; border: 1px solid #222; }
-        .bot { background: transparent; border-left: 2px solid var(--p-purple); padding-left: 25px; color: #ddd; }
-
-        /* INPUT */
-        .input-container { position: absolute; bottom: 35px; left: 0; right: 0; display: flex; justify-content: center; z-index: 100; }
-        .input-wrapper { width: 65%; background: rgba(15,15,15,0.8); backdrop-filter: blur(20px); border-radius: 50px; padding: 8px 12px 8px 25px; display: flex; align-items: center; border: 1px solid #222; }
-        #input { flex:1; background:transparent; border:none; color:#fff; outline:none; font-size: 1rem; padding: 12px 0; }
-        
-        /* LOGIN CARD */
+        /* LOGIN OVERLAY */
         #login { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:#000; z-index: 3000; }
-        .login-card { background:#0D0D0D; padding:40px; border-radius:30px; border:1px solid #222; text-align:center; width:340px; }
-        .auth-btn { width:100%; padding:14px; border:none; border-radius:12px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:10px; transition: 0.3s; }
+        .login-card { background:#0D0D0D; padding:40px; border-radius:30px; border:1px solid #222; text-align:center; width:340px; box-shadow: 0 0 50px rgba(125, 42, 232, 0.1); }
+        .auth-btn { width:100%; padding:14px; border:none; border-radius:12px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:12px; transition: 0.3s; font-family: inherit; }
         .btn-google { background:#fff; color:#000; }
+        .btn-github { background:#24292e; color:#fff; }
         .btn-email { background: var(--p-purple); color:#fff; margin-top: 10px; }
         
-        .field-wrap { position: relative; width: 100%; display: flex; align-items: center; margin-bottom: 8px; }
-        input.auth-input { width:100%; padding:14px; background:#000; border:1px solid #222; color:#fff; border-radius:12px; outline:none; font-family: inherit; font-size: 0.9rem; }
-        input.auth-input:focus { border-color: var(--p-purple); }
-        .eye-btn { position: absolute; right: 15px; color: #444; cursor: pointer; border:none; background:none; width:auto; padding:0; margin:0; }
+        input.auth-input { width:90%; padding:14px; margin:5px 0; background:#000; border:1px solid #222; color:#fff; border-radius:12px; outline:none; font-family: inherit; }
+        .pass-wrap { position: relative; width: 100%; display: flex; align-items: center; justify-content: center; }
+        .eye-btn { position: absolute; right: 15px; color: #444; cursor: pointer; border:none; background:none; }
+
+        /* APP LAYOUT */
+        #app { display:none; flex:1; height: 100vh; width: 100%; }
+        #sidebar { width:280px; background: var(--dark-bg); padding:20px; display:flex; flex-direction:column; border-right: 1px solid #111; gap: 15px; }
+        .logo-text { color: var(--p-purple); font-weight: 900; font-size: 1.1rem; letter-spacing: 3px; margin-bottom: 10px; }
+        
+        /* STAFF BADGES */
+        .tier-badge { font-size: 0.6rem; padding: 3px 8px; border-radius: 6px; font-weight: bold; margin-top: 4px; display: inline-block; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); }
+        .badge-founder { background: linear-gradient(90deg, #FFD700, #FFA500); color: #000; animation: pulse-gold 2s infinite; }
+        .badge-admin { background: #ff4444; color: #fff; }
+        .badge-mod { background: #00ffcc; color: #000; }
+        @keyframes pulse-gold { 0%, 100% { box-shadow: 0 0 5px rgba(255,215,0,0.3); } 50% { box-shadow: 0 0 15px rgba(255,215,0,0.6); } }
+
+        /* CHAT AREA */
+        #main { flex:1; display:flex; flex-direction:column; background: #000; position: relative; }
+        #chat { flex:1; overflow-y:auto; padding: 40px 15% 120px 15%; scroll-behavior: smooth; }
+        .msg { max-width: 80%; margin: 20px 0; padding: 16px 22px; border-radius: 20px; line-height: 1.6; font-size: 0.95rem; }
+        .user { margin-left:auto; background: #111; border: 1px solid #222; }
+        .bot { background: transparent; border-left: 2px solid var(--p-purple); color: #ddd; padding-left: 20px; border-radius: 0; }
     </style>
 </head>
 <body>
 
 <div id="login">
     <div class="login-card">
-        <h2 style="color:var(--p-purple); letter-spacing:3px; margin-bottom:25px; font-weight: 900;">MYTHICAL AI</h2>
+        <h2 style="color:var(--p-purple); letter-spacing:3px; margin-bottom:30px; font-weight: 900;">MYTHICAL AI</h2>
+        <button class="auth-btn btn-google" onclick="loginWith('google')">Google Login</button>
+        <button class="auth-btn btn-github" onclick="loginWith('github')">GitHub Login</button>
+        <div style="color:#333; font-size:0.7rem; margin:20px 0;">— STAFF ACCESS —</div>
         
-        <button onclick="login('google')" class="auth-btn btn-google">
-            <img src="https://www.google.com/favicon.ico" width="18"> GOOGLE LOGIN
-        </button>
-        <button onclick="login('github')" class="auth-btn btn-github" style="background:#24292e; color:#fff;">
-            <i data-lucide="github" size="18"></i> GITHUB LOGIN
-        </button>
-
-        <div style="color:#333; font-size:0.7rem; margin:15px 0; letter-spacing: 1px;">STAFF REGISTRATION</div>
+        <input id="staffName" class="auth-input" type="text" placeholder="Your Name">
+        <input id="email" class="auth-input" type="email" placeholder="Email">
         
-        <div class="field-wrap">
-            <input id="regName" class="auth-input" type="text" placeholder="Full Name (Staff Only)">
+        <div class="pass-wrap">
+            <input id="pass" class="auth-input" type="password" placeholder="Password">
+            <button class="eye-btn" onclick="togglePass()"><i id="eyeIcon" data-lucide="eye" style="width:18px"></i></button>
         </div>
-
-        <div class="field-wrap">
-            <input id="emailLog" class="auth-input" type="email" placeholder="Email Address">
-        </div>
-        
-        <div class="field-wrap">
-            <input id="passLog" class="auth-input" type="password" placeholder="Secure Password">
-            <button type="button" class="eye-btn" onclick="togglePass()">
-                <i data-lucide="eye" id="eyeIcon" style="width:18px"></i>
-            </button>
-        </div>
-        
-        <button onclick="emailLogin()" class="auth-btn btn-email">SIGN IN</button>
-        <div style="display: flex; justify-content: space-between; margin-top: 10px; padding: 0 5px;">
-            <span style="font-size: 0.65rem; color: #555; cursor: pointer;" onclick="signup()">Create Staff Account</span>
-            <span style="font-size: 0.65rem; color: #555; cursor: pointer;">Reset Key</span>
-        </div>
+        <button class="auth-btn btn-email" onclick="emailLogin()">ENTER</button>
+        <p style="font-size: 0.6rem; color: #444; cursor: pointer; margin-top: 10px;" onclick="signup()">New Staff? Register</p>
     </div>
 </div>
 
-<div id="sidebar">
-    <div class="logo-text">MYTHICAL AI</div>
-    <div style="background:#0A0A0A; padding:15px; border-radius:18px; border:1px solid var(--border);">
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <div id="userInit" style="width:36px; height:36px; background:var(--p-purple); border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold;">?</div>
-            <div style="overflow: hidden;">
-                <div id="userNameDisp" style="font-size:0.85rem; font-weight:bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">User</div>
-                <span id="userTier" class="tier-badge badge-basic">BASIC</span>
+<div id="app">
+    <div id="sidebar">
+        <div class="logo-text">MYTHICAL AI</div>
+        <div style="background:#0A0A0A; padding:15px; border-radius:18px; border:1px solid #111;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div id="userInit" style="width:36px; height:36px; background:var(--p-purple); border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold;">?</div>
+                <div>
+                    <div id="userNameDisp" style="font-size:0.85rem; font-weight:bold;">User</div>
+                    <span id="userTier" class="tier-badge">BASIC</span>
+                </div>
             </div>
         </div>
+        <button onclick="logout()" style="margin-top:auto; color:red; background:none; border:none; cursor:pointer;">Terminate Session</button>
     </div>
-    <button onclick="newChat()" style="width:100%; padding:12px; background:transparent; border:1px solid #222; color:#fff; border-radius:12px; cursor:pointer; margin-top:15px; font-weight: bold; font-size: 0.8rem;">+ NEW CHAT</button>
-    <div id="history"></div>
-    <button onclick="logout()" style="color:#ff4444; background:none; border:none; cursor:pointer; font-size:0.7rem; opacity:0.4; text-align: left; padding: 10px;">Terminate Session</button>
-</div>
-
-<div id="main">
-    <div id="chat"></div>
-    <div class="input-container">
-        <div class="input-wrapper">
-            <input id="input" placeholder="Ask Mythical AI..." onkeydown="if(event.key==='Enter') send()">
-            <button onclick="send()" style="background:var(--p-purple); color:white; border:none; width:40px; height:40px; border-radius:50%; cursor:pointer; display: flex; align-items: center; justify-content: center;">
-                <i data-lucide="arrow-up" size="20"></i>
-            </button>
-        </div>
+    <div id="main">
+        <div id="chat"></div>
     </div>
 </div>
 
 <script>
+// 🔐 YOUR CONFIG
 const SB_URL = "https://mtczyuzbcunsflvcnatf.supabase.co";
 const SB_KEY = "sb_secret_zNmUoxieIHwTqsNusdwNoA_GWLyAmys"; 
 const supabase = window.supabase.createClient(SB_URL, SB_KEY);
 
-let messages = [];
-let currentChatId = null;
-
-// 👁️ PASSWORD TOGGLE FIX
+// 👁️ PASS TOGGLE
 function togglePass() {
-    const passInput = document.getElementById("passLog");
+    const p = document.getElementById("pass");
     const icon = document.getElementById("eyeIcon");
-    if (passInput.type === "password") {
-        passInput.type = "text";
-        icon.setAttribute("data-lucide", "eye-off");
-    } else {
-        passInput.type = "password";
-        icon.setAttribute("data-lucide", "eye");
-    }
+    p.type = p.type === "password" ? "text" : "password";
+    icon.setAttribute("data-lucide", p.type === "password" ? "eye" : "eye-off");
     lucide.createIcons();
 }
 
 // 🔑 AUTH LOGIC
-async function login(provider){
-    await supabase.auth.signInWithOAuth({ provider, options:{ redirectTo: window.location.origin } });
+async function loginWith(provider){
+    await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: window.location.href } });
 }
 
 async function emailLogin(){
-    const email = document.getElementById("emailLog").value;
-    const password = document.getElementById("passLog").value;
-    const {data, error} = await supabase.auth.signInWithPassword({email, password});
+    const {data, error} = await supabase.auth.signInWithPassword({ 
+        email: document.getElementById("email").value, 
+        password: document.getElementById("pass").value 
+    });
     if(error) alert(error.message);
-    else setupUser(data.user);
+    else setupUI(data.user);
 }
 
 async function signup(){
-    const email = document.getElementById("emailLog").value;
-    const password = document.getElementById("passLog").value;
-    const name = document.getElementById("regName").value;
-    
-    const {error} = await supabase.auth.signUp({
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("pass").value;
+    const name = document.getElementById("staffName").value;
+    const {error} = await supabase.auth.signUp({ 
         email, 
-        password,
-        options: { data: { full_name: name } }
+        password, 
+        options: { data: { full_name: name } } 
     });
     if(error) alert(error.message);
     else alert("Success! Log in now.");
 }
 
-// 👤 THE NAME & TIER ENGINE
-function setupUser(user){
-    document.getElementById("login").style.display="none";
-    
-    // Check Full Name field from metadata OR the local name field OR the email
-    const metaName = user.user_metadata?.full_name;
-    const inputName = document.getElementById("regName").value;
-    const finalName = metaName || inputName || user.email.split('@')[0];
+// 👤 THE "STAFF RECOGNITION" ENGINE
+function setupUI(user){
+    document.getElementById("login").style.display = "none";
+    document.getElementById("app").style.display = "flex";
 
-    document.getElementById("userNameDisp").innerText = finalName;
-    document.getElementById("userInit").innerText = finalName.charAt(0).toUpperCase();
+    // Priority: Metadata Name > Manual Name Field > Email
+    const name = user.user_metadata?.full_name || 
+                 document.getElementById("staffName").value || 
+                 user.email.split('@')[0];
+
+    document.getElementById("userNameDisp").innerText = name;
+    document.getElementById("userInit").innerText = name.charAt(0).toUpperCase();
 
     const badge = document.getElementById("userTier");
-    const checkName = finalName.toLowerCase();
-
-    // STAFF HIERARCHY
-    if (checkName.includes("chethan")) {
-        badge.innerText = "FOUNDER";
-        badge.className = "tier-badge badge-founder";
-    } else if (checkName.includes("thaman")) {
-        badge.innerText = "ADMIN";
-        badge.className = "tier-badge badge-admin";
-    } else if (checkName.includes("pavan")) {
-        badge.innerText = "MODERATOR";
-        badge.className = "tier-badge badge-mod";
+    const lower = name.toLowerCase();
+    
+    // 🔥 Staff Logic Trigger
+    if(lower.includes("chethan")) { 
+        badge.innerText="FOUNDER"; 
+        badge.className="tier-badge badge-founder"; 
+    }
+    else if(lower.includes("thaman")) { 
+        badge.innerText="ADMIN"; 
+        badge.className="tier-badge badge-admin"; 
+    }
+    else if(lower.includes("pavan")) { 
+        badge.innerText="MODERATOR"; 
+        badge.className="tier-badge badge-mod"; 
     } else {
-        badge.innerText = "BASIC";
-        badge.className = "tier-badge badge-basic";
+        badge.innerText="STAFF";
+        badge.className="tier-badge";
     }
 
-    localStorage.setItem("uid", user.id);
-    if (window.location.hash) window.history.replaceState({}, document.title, "/");
-    loadHistory();
+    if(window.location.hash) window.history.replaceState({}, document.title, window.location.pathname);
 }
 
-// 💬 CHAT LOGIC
-function addMessage(role, text){
-    messages.push({role, text});
-    const chat = document.getElementById("chat");
-    chat.innerHTML += `<div class="msg ${role}">${text}</div>`;
-    chat.scrollTop = chat.scrollHeight;
-}
-
-async function send(){
-    const input = document.getElementById("input");
-    const text = input.value.trim();
-    if(!text) return;
-    addMessage("user", text);
-    input.value="";
-    setTimeout(() => { addMessage("bot", "Cloud Response: System is synchronizing for " + text); saveChat(); }, 600);
-}
-
-async function saveChat(){
-    const uid = localStorage.getItem("uid");
-    if(!uid) return;
-    if(!currentChatId){
-        const {data} = await supabase.from("mythical_chats").insert([{ user_id: uid, title: messages[0].text.substring(0,25), messages: messages }]).select().single();
-        if(data) currentChatId = data.id;
-    } else {
-        await supabase.from("mythical_chats").update({messages}).eq("id", currentChatId);
-    }
-    loadHistory();
-}
-
-async function loadHistory(){
-    const uid = localStorage.getItem("uid");
-    const {data} = await supabase.from("mythical_chats").select("*").eq("user_id", uid).order("created_at",{ascending:false});
-    if(data) {
-        document.getElementById("history").innerHTML = data.map(chat => `
-            <div class="history-item" onclick="openChat('${chat.id}')">
-                <i data-lucide="message-square" size="14" style="opacity:0.3"></i>
-                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${chat.title}</span>
-            </div>`).join("");
-        lucide.createIcons();
-    }
-}
-
-async function openChat(id){
-    const {data} = await supabase.from("mythical_chats").select("*").eq("id", id).single();
-    if(data) {
-        currentChatId = id; messages = data.messages;
-        document.getElementById("chat").innerHTML = "";
-        messages.forEach(m => { document.getElementById("chat").innerHTML += `<div class="msg ${m.role}">${m.text}</div>`; });
-    }
-}
-
-function newChat(){ messages = []; currentChatId = null; document.getElementById("chat").innerHTML = ""; }
-
-async function logout(){ await supabase.auth.signOut(); localStorage.clear(); location.reload(); }
-
+// 🚀 INITIALIZE
 async function init(){
-    const {data:{session}} = await supabase.auth.getSession();
-    if(session) setupUser(session.user);
-    supabase.auth.onAuthStateChange((e, s) => { if(s) setupUser(s.user); });
+    const { data: { session } } = await supabase.auth.getSession();
+    if(session) setupUI(session.user);
+    supabase.auth.onAuthStateChange((event, session) => { if(session) setupUI(session.user); });
+}
+
+async function logout(){
+    await supabase.auth.signOut();
+    localStorage.clear();
+    location.reload();
 }
 
 lucide.createIcons();
