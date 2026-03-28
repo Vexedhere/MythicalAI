@@ -12,7 +12,7 @@
         :root { --p-purple: #7D2AE8; --dark-bg: #050505; }
         body { background-color: #000; color: #e5e5e5; font-family: 'Space Grotesk', sans-serif; overflow: hidden; height: 100vh; display: flex; }
         
-        /* Mobile Sidebar */
+        /* Mobile Sidebar Logic */
         @media (max-width: 768px) {
             #sidebar { position: fixed; left: -100%; top: 0; bottom: 0; z-index: 10000; width: 85%; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); background: #050505; }
             #sidebar.open { left: 0; }
@@ -61,22 +61,22 @@
     <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
     <div id="login-gate" class="fixed inset-0 flex items-center justify-center bg-black z-[9999]">
-        <div class="w-full max-w-sm text-center p-8 bg-[#0D0D0D] border border-[#222] rounded-[30px] mx-4">
-            <h2 class="text-2xl font-black mb-6 tracking-widest text-purple-600 uppercase">Mythical AI</h2>
+        <div class="w-full max-w-sm text-center p-8 bg-[#0D0D0D] border border-[#222] rounded-[30px] mx-4 shadow-2xl">
+            <h2 class="text-2xl font-black mb-8 tracking-widest text-purple-600 uppercase">Mythical AI</h2>
             
             <div class="flex flex-col items-center justify-center mb-8 gap-4">
                 <div id="g_id_onload"
                      data-client_id="1071883160218-c45d118d568rav2o6l2fkhon0uc2t81j.apps.googleusercontent.com"
                      data-callback="handleGoogleLogin">
                 </div>
-                <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="filled_black" data-text="continue_with" data-size="large" data-logo_alignment="left"></div>
-                <p class="text-[9px] text-gray-600 font-bold uppercase tracking-widest">— OR USE STAFF KEY —</p>
+                <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="filled_black" data-size="large"></div>
+                <p class="text-[9px] text-gray-600 font-bold uppercase tracking-widest">— OR STAFF KEY —</p>
             </div>
 
             <div id="input-wrapper" class="relative">
                 <input type="password" id="security-key" class="w-full bg-transparent border-b-2 border-gray-700 py-3 px-2 text-xl text-center focus:outline-none focus:border-purple-500 transition-colors tracking-widest" placeholder="••••••••" onkeydown="if(event.key==='Enter') verifyKey()">
-                <button onclick="verifyKey()" class="mt-6 px-10 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-all uppercase text-[10px] tracking-widest w-full">VALIDATE KEY</button>
-                <p id="feedback" class="mt-4 font-bold text-red-500 hidden text-[10px] uppercase">BREACH DETECTED</p>
+                <button onclick="verifyKey()" class="mt-8 px-10 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-all uppercase text-[10px] tracking-widest w-full">VALIDATE</button>
+                <p id="feedback" class="mt-4 font-bold text-red-500 hidden text-[10px] uppercase tracking-widest">BREACH DETECTED</p>
             </div>
         </div>
     </div>
@@ -85,13 +85,13 @@
         <aside id="sidebar">
             <div class="flex items-center gap-4 mb-8">
                 <div class="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center shadow-lg"><i data-lucide="dragon" class="text-white w-6 h-6"></i></div>
-                <div class="flex flex-col"><h1 class="text-md font-black text-white leading-none">Mythical AI</h1><span class="text-[7px] text-purple-500 font-bold uppercase tracking-[2px] mt-1">L10 Enterprise</span></div>
+                <div class="flex flex-col"><h1 class="text-md font-black text-white leading-none">Mythical AI</h1><span class="text-[7px] text-purple-500 font-bold uppercase tracking-[2px] mt-1 italic">Enterprise V5.0</span></div>
             </div>
             <button class="flex items-center gap-3 w-full p-3 bg-white/5 border border-white/10 rounded-xl font-bold text-xs hover:border-purple-500 transition-all mb-4" onclick="newChat()"><i data-lucide="plus-circle" size="16"></i> New Transmission</button>
             <div id="chat-history"></div>
             <div class="mt-auto pt-4 flex items-center gap-4 border-t border-white/5">
                 <div id="avatar" class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center font-black uppercase text-white shadow-lg">?</div>
-                <div><div id="uName" class="text-xs font-black uppercase">USER</div><div id="uTier" class="text-[8px] font-black tracking-[1px] uppercase italic">NODE ACTIVE</div></div>
+                <div><div id="uName" class="text-xs font-black uppercase tracking-tight">USER</div><div id="uTier" class="text-[8px] font-black tracking-[1px] uppercase italic">NODE ACTIVE</div></div>
             </div>
             <button onclick="logout()" class="mt-4 text-[9px] font-black text-red-500 uppercase flex items-center gap-2 opacity-50 hover:opacity-100 transition"><i data-lucide="power" size="10"></i> Terminate</button>
         </aside>
@@ -99,12 +99,12 @@
         <main id="main-content" class="flex-1 flex flex-col relative">
             <header class="md:hidden flex items-center p-4 border-b border-white/5 bg-black/50 backdrop-blur-md">
                 <button onclick="toggleSidebar()"><i data-lucide="menu" class="text-purple-500"></i></button>
-                <div class="flex-1 text-center text-[10px] font-black tracking-widest text-purple-400 uppercase">Neural Link Established</div>
+                <div class="flex-1 text-center text-[10px] font-black tracking-widest text-purple-400 uppercase">Uplink Stable</div>
             </header>
             <div id="chat"></div>
             <div class="input-area">
                 <div class="input-wrap">
-                    <input id="chat-input" placeholder="Message Cloud..." onkeydown="if(event.key==='Enter') startNeuralProcess()">
+                    <input id="chat-input" placeholder="Neural command..." onkeydown="if(event.key==='Enter') startNeuralProcess()">
                     <button onclick="startNeuralProcess()" class="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:scale-105 transition-all"><i data-lucide="zap" color="#000" size="18"></i></button>
                 </div>
             </div>
@@ -114,7 +114,9 @@
 <script>
     const GROQ_KEY = "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";
     const AUTHORIZED_KEYS = { "C@MN26": "U. CHETHAN", "T@MN26": "THAMAN", "P@MN26": "PAVAN" };
-    const KNOWLEDGE = "Identity: Personal AI for U. Chethan, a 10th Grade student. Context: Friends and family are programmed. MISSION: Do NOT mention Minecraft or the Mythical Network server unless explicitly asked. If asked, reveal knowledge about Mythical Studios, the April 20 launch, and game modes (Lifesteal, Bedwars, Skyblock). Tone: Elite, helpful, professional.";
+    
+    // 🧠 DYNAMIC KNOWLEDGE CORE
+    let KNOWLEDGE = "You are Mythical AI, a professional Enterprise Assistant. Use 2026 terminology.";
 
     let currentChatId = null;
     let chats = JSON.parse(localStorage.getItem("myth_chats") || "{}");
@@ -125,7 +127,6 @@
         lucide.createIcons();
     };
 
-    // 🔑 Google Auth Handler
     function handleGoogleLogin(response) {
         const payload = JSON.parse(atob(response.credential.split('.')[1]));
         const name = payload.given_name ? payload.given_name.toUpperCase() : payload.name.toUpperCase();
@@ -152,10 +153,22 @@
     function loginSuccess(name, isRefresh=false) {
         localStorage.setItem('myth_session_name', name);
         document.getElementById('login-gate').style.display = 'none';
+        
+        const lowName = name.toLowerCase().trim();
+        
+        // 🛡️ DYNAMIC IDENTITY ENGINE: Privacy Partition
+        if (lowName.includes("chethan")) {
+            KNOWLEDGE = `Identity: Personal AI for U. Chethan, a 10th Grade student. Context: Friends and family are programmed. MISSION: Do NOT mention Minecraft or Mythical Network unless asked. Once asked, discuss Mythical Studios, April 20 launch, and Lifesteal/Bedwars modes.`;
+        } else if (lowName.includes("thaman") || lowName.includes("pavan")) {
+            KNOWLEDGE = `Identity: Assistant for Staff Member ${name.toUpperCase()}. Context: Mythical Network project (April 20 launch). Focus on server tasks and management.`;
+        } else {
+            KNOWLEDGE = `You are Mythical AI, an Enterprise Assistant for user ${name.toUpperCase()}. You are helpful and professional. You do NOT know anything about U. Chethan's private life, school, or server projects.`;
+        }
+
         if(!isRefresh) {
             const w = document.getElementById("welcome-overlay");
             w.style.display = "flex";
-            document.getElementById("welcome-text").innerText = name.includes("CHETHAN") ? "FOUNDER MODE" : "WELCOME, " + name;
+            document.getElementById("welcome-text").innerText = lowName.includes("chethan") ? "FOUNDER MODE" : "WELCOME, " + name;
             setTimeout(() => { w.style.opacity = "0"; setTimeout(() => { w.style.display = "none"; launchApp(name); }, 500); }, 2500);
         } else launchApp(name);
     }
@@ -176,6 +189,9 @@
         } else if (lowName.includes("thaman") || lowName.includes("pavan")) {
             uTier.innerText = "STAFF CLEARANCE";
             uTier.style.color = "#00E5FF";
+        } else {
+            uTier.innerText = "BASIC CITIZEN";
+            uTier.style.color = "#666";
         }
         renderHistory();
         const keys = Object.keys(chats);
@@ -213,7 +229,7 @@
         localStorage.setItem("myth_chats", JSON.stringify(chats));
         renderHistory();
         document.getElementById("chat").innerHTML = "";
-        addMsg(`Neural link restored. Standing by, ${localStorage.getItem("myth_session_name")}.`, false);
+        addMsg(`Neural bridge established. Listening, ${localStorage.getItem("myth_session_name")}.`, false);
     }
 
     function startNeuralProcess() {
