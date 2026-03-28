@@ -102,7 +102,7 @@
             <div id="chat"></div>
             <div class="input-area">
                 <div class="input-wrap">
-                    <input id="chat-input" placeholder="Message Mythical AI Cloud..." onkeydown="if(event.key==='Enter') startNeuralProcess()">
+                    <input id="chat-input" placeholder="Neural command..." onkeydown="if(event.key==='Enter') startNeuralProcess()">
                     <button onclick="startNeuralProcess()" class="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:scale-110 transition-all">
                         <i data-lucide="zap" color="#000" size="20"></i>
                     </button>
@@ -114,7 +114,7 @@
 <script>
     const GROQ_KEY = "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";
     const AUTHORIZED_KEYS = { "C@MN26": "U. CHETHAN", "T@MN26": "THAMAN", "P@MN26": "PAVAN" };
-    const SYSTEM_PROMPT = "You are Mythical AI, built by U. Chethan. Founders: U. Chethan. Staff: Thaman, Pavan. Minecraft Launch: April 20, 2026. Be professional.";
+    const KNOWLEDGE = "You are Mythical AI by U. Chethan. Founders: U. Chethan. Staff: Thaman, Pavan. Minecraft Launch: April 20, 2026. Be professional.";
 
     let currentChatId = null;
     let chats = JSON.parse(localStorage.getItem("myth_chats") || "{}");
@@ -211,7 +211,7 @@
         localStorage.setItem("myth_chats", JSON.stringify(chats));
         renderHistory();
         document.getElementById("chat").innerHTML = "";
-        addMsg(`Handshake complete. How shall we progress toward April 20, ${localStorage.getItem("myth_session_name")}?`, false);
+        addMsg(`Handshake complete. Standing by for April 20, ${localStorage.getItem("myth_session_name")}.`, false);
     }
 
     function startNeuralProcess() {
@@ -229,7 +229,7 @@
             const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                 method: "POST",
                 headers: { "Authorization": `Bearer ${GROQ_KEY}`, "Content-Type": "application/json" },
-                body: JSON.stringify({ model: "llama-3.3-70b-versatile", messages: [{ role: "system", content: SYSTEM_PROMPT }, { role: "user", content: text }] })
+                body: JSON.stringify({ model: "llama-3.3-70b-versatile", messages: [{ role: "system", content: KNOWLEDGE }, { role: "user", content: text }] })
             });
             const d = await r.json();
             const reply = d.choices[0].message.content;
@@ -240,8 +240,9 @@
         } catch(e) { addMsg("⚠️ Neural link timeout.", false); }
     }
 
+    // 🏆 STABLE 2026 UNIFIED ENDPOINT
     function triggerVisual(p) {
-        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(p)}?width=1024&height=1024&nologo=true&model=flux&seed=${Math.floor(Math.random()*1000000)}`;
+        const url = `https://gen.pollinations.ai/image/${encodeURIComponent(p)}?model=flux&width=1024&height=1024&nologo=true&seed=${Math.floor(Math.random()*1000000)}`;
         addMsg(`Materializing neural visual: "${p}"`, false, url);
         chats[currentChatId].push({ user: p, bot: "Visual materialized.", img: url });
         localStorage.setItem("myth_chats", JSON.stringify(chats));
@@ -259,12 +260,13 @@
             <button class="trash-btn" onclick="this.parentElement.remove()"><i data-lucide="trash-2" size="14"></i></button>
             <p>${text}</p>
             ${img ? `
-                <div class="mt-6 rounded-2xl overflow-hidden border border-white/10 relative group bg-white/5 min-h-[300px] flex items-center justify-center">
-                    <div id="ld-${mid}" class="absolute flex flex-col items-center gap-2 z-0">
+                <div class="mt-6 rounded-2xl overflow-hidden border border-white/10 relative group bg-white/5 min-h-[300px] flex flex-col items-center justify-center">
+                    <div id="ld-${mid}" class="flex flex-col items-center gap-2">
                         <div class="w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full loader-spin"></div>
                         <div class="text-[9px] font-bold text-purple-500 uppercase tracking-widest animate-pulse">Establishing Node...</div>
+                        <button onclick="retryNode('${mid}', '${img}')" class="mt-2 text-[8px] bg-white/5 px-3 py-1 rounded-full text-gray-500 hover:text-white uppercase transition-all">Force Render</button>
                     </div>
-                    <img src="${img}" class="w-full relative z-10 opacity-0 transition-opacity duration-700" onload="document.getElementById('ld-${mid}').remove(); this.style.opacity='1';">
+                    <img src="${img}" class="w-full relative z-10 opacity-0 transition-opacity duration-700 absolute inset-0" onload="document.getElementById('ld-${mid}').remove(); this.style.opacity='1';">
                     <a href="${img}" target="_blank" download class="absolute top-4 right-4 z-20 bg-purple-600 text-white p-3 rounded-xl opacity-0 group-hover:opacity-100 transition-all shadow-xl">
                         <i data-lucide="download" size="16"></i>
                     </a>
@@ -273,15 +275,14 @@
         box.appendChild(div);
         box.scrollTop = box.scrollHeight;
         lucide.createIcons();
+    }
 
-        if(img) {
-            setTimeout(() => {
-                const loader = document.getElementById(`ld-${mid}`);
-                if(loader) {
-                    loader.innerHTML = `<div class="text-red-500 text-[9px] font-bold uppercase text-center">Node Busy.<br>Retrying...</div>`;
-                    div.querySelector('img').src = img + "&retry=" + Math.random();
-                }
-            }, 15000);
+    function retryNode(mid, img) {
+        const loader = document.getElementById(`ld-${mid}`);
+        if(loader) {
+            loader.querySelector('.text-purple-500').innerText = "Rerouting Node...";
+            const imgTag = loader.parentElement.querySelector('img');
+            imgTag.src = img + "&retry=" + Math.random();
         }
     }
 </script>
