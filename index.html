@@ -3,221 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mythical AI | Trinity Portal</title>
-    
+    <title>Mythical AI | Enterprise Core</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    
     <style>
-        :root { --p-purple: #7D2AE8; --dark-bg: #050505; --border: #1a1a1a; --glass: rgba(255, 255, 255, 0.03); }
-        * { box-sizing: border-box; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
-        body { margin:0; font-family: 'Inter', -apple-system, sans-serif; background:#000; color:#fff; display:flex; height: 100vh; overflow: hidden; }
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap');
+        :root { --p-purple: #7D2AE8; --dark-bg: #050505; }
+        body { background-color: #000; color: #e5e5e5; font-family: 'Space Grotesk', sans-serif; overflow: hidden; height: 100vh; display: flex; }
         
-        /* OVERLAYS */
-        #welcome-overlay { position: fixed; inset: 0; background: #000; z-index: 15000; display: none; align-items: center; justify-content: center; text-align: center; flex-direction: column; }
-        .welcome-title { font-size: 3.5rem; font-weight: 900; color: var(--p-purple); text-transform: uppercase; letter-spacing: 5px; margin-bottom: 10px; }
-        .welcome-sub { font-size: 1rem; color: #666; font-weight: 600; letter-spacing: 3px; }
+        #welcome-overlay { position: fixed; inset: 0; background: #000; z-index: 15000; display: none; align-items: center; justify-content: center; text-align: center; flex-direction: column; transition: opacity 0.5s; }
+        .welcome-title { font-size: 3.5rem; font-weight: 900; color: var(--p-purple); text-transform: uppercase; letter-spacing: 5px; }
 
-        #login-gate { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:#000; z-index: 9999; }
-        .gate-card { background:#0D0D0D; padding:40px; border-radius:35px; border:1px solid #222; text-align:center; width:min(95%, 380px); box-shadow: 0 0 60px rgba(125, 42, 232, 0.15); }
-        
-        input.gate-input { width:100%; padding:15px; margin:8px 0; background:#000; border:1px solid #222; color:#fff; border-radius:15px; outline:none; }
-        .gate-btn { width:100%; padding:15px; background:var(--p-purple); color:#fff; border:none; border-radius:15px; cursor:pointer; font-weight:900; margin-top:20px; text-transform: uppercase; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-10px); } 40%, 80% { transform: translateX(10px); } }
+        .breach-alert { animation: shake 0.4s both; border-color: #ff0000 !important; color: #ff4d4d; }
 
-        /* APP LAYOUT */
-        #app { display:none; flex:1; height: 100vh; width: 100%; }
-        #sidebar { width:290px; background: var(--dark-bg); padding:24px; border-right: 1px solid var(--border); display:flex; flex-direction:column; gap: 20px; }
-        #main-content { flex:1; display:flex; flex-direction:column; position: relative; background: #000; }
-
-        /* SIDEBAR CHAT HISTORY */
-        #chat-history { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px; margin-top: 15px; }
-        .history-btn { background:#0D0D0D; border:1px solid #1a1a1a; color:#888; padding:14px; border-radius:15px; cursor:pointer; text-align:left; font-size: 0.85rem; display: flex; align-items: center; gap: 10px; }
+        #sidebar { width: 300px; background: var(--dark-bg); border-right: 1px solid #1a1a1a; display: flex; flex-direction: column; padding: 24px; z-index: 50; }
+        #chat-history { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+        .history-btn { background: #0D0D0D; border: 1px solid #1a1a1a; color: #888; padding: 14px; border-radius: 15px; cursor: pointer; text-align: left; font-size: 0.85rem; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
         .history-btn:hover { background: #111; color: #fff; border-color: var(--p-purple); }
         .active-chat { border-color: var(--p-purple); color: #fff; background: rgba(125, 42, 232, 0.05); }
 
-        .top-bar { height: 75px; display: flex; align-items: center; justify-content: flex-end; padding: 0 35px; border-bottom: 1px solid #111; }
-        .logout-pill { background: rgba(255, 40, 40, 0.05); border: 1px solid #331111; color: #ff4444; padding: 10px 22px; border-radius: 40px; cursor: pointer; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
-
-        #chat { flex:1; overflow-y:auto; padding: 80px 18% 150px 18%; scroll-behavior: smooth; }
-        .msg { max-width: 85%; margin: 28px 0; padding: 22px; border-radius: 25px; line-height: 1.8; font-size: 0.98rem; }
+        #chat { flex: 1; overflow-y: auto; padding: 60px 18% 150px 18%; scroll-behavior: smooth; }
+        .msg { position: relative; max-width: 85%; margin: 28px 0; padding: 22px; border-radius: 25px; line-height: 1.8; font-size: 0.98rem; animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
         .bot { border-left: 4px solid var(--p-purple); color: #e0e0e0; background: rgba(125, 42, 232, 0.02); }
-        .user { margin-left:auto; background: #0D0D0D; border: 1px solid #1A1A1A; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .user { margin-left: auto; background: #0D0D0D; border: 1px solid #1A1A1A; }
+        
+        .trash-btn { position: absolute; top: 15px; right: 15px; opacity: 0; cursor: pointer; color: #444; transition: 0.2s; background: transparent; border: none; }
+        .msg:hover .trash-btn { opacity: 1; }
+        .trash-btn:hover { color: #ff4444; }
 
         .input-area { position: absolute; bottom: 40px; left: 0; right: 0; padding: 0 18%; }
-        .input-wrap { width: 100%; background: rgba(12, 12, 12, 0.9); backdrop-filter: blur(30px); border: 1px solid #222; border-radius: 45px; padding: 12px 15px 12px 30px; display: flex; align-items: center; }
-        #chat-input { flex:1; background:transparent; border:none; color:#fff; outline:none; font-size: 1.05rem; }
+        .input-wrap { background: rgba(12, 12, 12, 0.9); backdrop-filter: blur(30px); border: 1px solid #222; border-radius: 45px; padding: 12px 15px 12px 30px; display: flex; align-items: center; }
+        #chat-input { flex: 1; background: transparent; border: none; color: #fff; outline: none; font-size: 1.05rem; }
         
-        .nav-btn { background: transparent; border: none; color: #fff; cursor: pointer; display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 0.95rem; padding: 12px 8px; }
-
-        @media (max-width: 768px) { #sidebar { display: none; } #chat { padding: 80px 6% 150px 6%; } .input-area { padding: 0 6%; } }
+        #chat::-webkit-scrollbar { width: 4px; }
+        #chat::-webkit-scrollbar-thumb { background: var(--p-purple); border-radius: 10px; }
+        
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .loader-spin { animation: spin 1s linear infinite; }
     </style>
 </head>
 <body>
 
-<div id="welcome-overlay">
-    <div class="welcome-title" id="welcome-text">ACCESSING</div>
-    <div class="welcome-sub" id="welcome-subtext">MYTHICAL CLOUD CORE V3.0</div>
-</div>
-
-<div id="login-gate">
-    <div class="gate-card">
-        <h2 style="color:var(--p-purple); font-weight:900; letter-spacing:4px;">MYTHICAL AI</h2>
-        <div id="g_id_onload" 
-             data-client_id="1071883160218-c45d118d568rav2o6l2fkhon0uc2t81j.apps.googleusercontent.com" 
-             data-callback="handleGoogle"></div>
-        <div class="g_id_signin" data-type="standard" data-theme="filled_black" style="margin-bottom: 25px; display:flex; justify-content:center;"></div>
-        
-        <input id="loginName" class="gate-input" placeholder="Full Name" oninput="detectStaff()">
-        <input id="loginEmail" class="gate-input" type="email" placeholder="Email Address">
-        <div id="staff-pin-box" style="display:none;"><input id="staffPass" class="gate-input" type="password" placeholder="Staff Security Key"></div>
-        <div id="user-pass-box"><input id="userPass" class="gate-input" type="password" placeholder="User Password"></div>
-        <button class="gate-btn" onclick="executeLogin()">Unlock Portal</button>
+    <div id="welcome-overlay">
+        <div class="welcome-title" id="welcome-text">INITIALIZING</div>
+        <div class="text-gray-500 font-bold tracking-[3px] text-sm mt-2 uppercase">Mythical AI Cloud Core</div>
     </div>
-</div>
 
-<div id="app">
-    <div id="sidebar">
-        <div style="color:var(--p-purple); font-weight:900; font-size:1.1rem; letter-spacing:2px;">MYTHICAL AI</div>
-        
-        <button class="nav-btn" onclick="newChat()">
-            <i data-lucide="plus-circle" size="20"></i> New Transmission
-        </button>
-
-        <div id="chat-history"></div>
-
-        <div style="margin-top: auto; padding: 20px 0; border-top: 1px solid #111; display: flex; align-items: center; gap: 15px;">
-            <div id="avatar" style="width: 42px; height: 42px; background: var(--p-purple); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem;">?</div>
-            <div>
-                <div id="uName" style="font-size: 0.95rem; font-weight: 800;">User</div>
-                <div id="uTier" style="font-size: 0.7rem; font-weight: 900; letter-spacing: 1.5px;">BASIC</div>
+    <div id="login-gate" class="fixed inset-0 flex items-center justify-center bg-black z-[9999]">
+        <div class="w-full max-w-md text-center p-10 bg-[#0D0D0D] border border-[#222] rounded-[35px] shadow-2xl">
+            <h2 class="text-3xl font-black mb-10 tracking-widest text-purple-600 uppercase">Mythical AI</h2>
+            <div class="flex justify-center mb-10">
+                <div id="g_id_onload" data-client_id="1071883160218-c45d118d568rav2o6l2fkhon0uc2t81j.apps.googleusercontent.com" data-callback="handleGoogle"></div>
+                <div class="g_id_signin" data-type="standard" data-theme="filled_black" data-shape="pill"></div>
+            </div>
+            <div id="input-wrapper" class="relative">
+                <input type="password" id="security-key" class="w-full bg-transparent border-b-2 border-gray-700 py-4 px-2 text-2xl text-center focus:outline-none focus:border-purple-500 transition-colors tracking-widest" placeholder="••••••••" onkeydown="if(event.key==='Enter') verifyKey()">
+                <button onclick="verifyKey()" class="mt-8 px-12 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-all uppercase text-xs tracking-widest">VALIDATE</button>
+                <p id="feedback" class="mt-4 font-bold text-red-500 hidden text-xs uppercase tracking-widest">BREACH DETECTED</p>
             </div>
         </div>
     </div>
 
-    <div id="main-content">
-        <div class="top-bar">
-            <div class="logout-pill" onclick="logout()"><i data-lucide="power" size="16"></i> Terminate</div>
-        </div>
-        <div id="chat"></div>
-        <div class="input-area">
-            <div class="input-wrap">
-                <input id="chat-input" placeholder="Message Mythical Cloud..." onkeydown="if(event.key==='Enter') sendMsg()">
-                <button onclick="sendMsg()" style="background:#fff; border:none; width:48px; height:48px; border-radius:50%; cursor:pointer;"><i data-lucide="send" color="#000" size="22"></i></button>
+    <div id="app" class="hidden flex-1 flex h-screen w-full">
+        <aside id="sidebar">
+            <div class="flex items-center gap-4 mb-8">
+                <div onclick="location.reload()" class="w-12 h-12 bg-purple-600 rounded-2xl flex items-center justify-center cursor-pointer shadow-lg shadow-purple-900/40">
+                    <i data-lucide="dragon" class="text-white w-7 h-7"></i>
+                </div>
+                <div class="flex flex-col">
+                    <h1 class="text-lg font-black tracking-tighter text-white leading-none">Mythical AI</h1>
+                    <span class="text-[8px] text-purple-500 font-bold uppercase tracking-[3px] mt-1">Enterprise</span>
+                </div>
             </div>
-        </div>
+
+            <button class="flex items-center gap-3 w-full p-4 bg-white/5 border border-white/10 rounded-2xl font-bold text-sm hover:border-purple-500 transition-all mb-4" onclick="newChat()">
+                <i data-lucide="plus-circle"></i> New Transmission
+            </button>
+            <div id="chat-history"></div>
+            
+            <div class="mt-auto pt-6 flex items-center gap-4 border-t border-white/5">
+                <div id="avatar" class="w-11 h-11 bg-purple-600 rounded-full flex items-center justify-center font-black uppercase text-white shadow-lg shadow-purple-900/20">?</div>
+                <div>
+                    <div id="uName" class="text-sm font-black uppercase tracking-tight">USER</div>
+                    <div id="uTier" class="text-[9px] font-black tracking-[1px] uppercase italic transition-colors duration-500">NODE ACTIVE</div>
+                </div>
+            </div>
+            
+            <button onclick="logout()" class="mt-4 text-[10px] font-black text-red-500 uppercase tracking-widest flex items-center gap-2 opacity-50 hover:opacity-100 transition">
+                <i data-lucide="power" size="12"></i> Terminate
+            </button>
+        </aside>
+
+        <main id="main-content" class="flex-1 flex flex-col relative">
+            <div id="chat"></div>
+            <div class="input-area">
+                <div class="input-wrap">
+                    <input id="chat-input" placeholder="Message Mythical AI Cloud..." onkeydown="if(event.key==='Enter') startNeuralProcess()">
+                    <button onclick="startNeuralProcess()" class="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:scale-110 transition-all">
+                        <i data-lucide="zap" color="#000" size="20"></i>
+                    </button>
+                </div>
+            </div>
+        </main>
     </div>
-</div>
 
 <script>
     const GROQ_KEY = "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";
-    const staffDB = { "chethan": "C@MN", "thaman": "T@MN", "pavan": "P@MN" };
-    
+    const AUTHORIZED_KEYS = { "C@MN26": "U. CHETHAN", "T@MN26": "THAMAN", "P@MN26": "PAVAN" };
+    const SYSTEM_PROMPT = "You are Mythical AI, built by U. Chethan. Founders: U. Chethan. Staff: Thaman, Pavan. Minecraft Launch: April 20, 2026. Be professional.";
+
     let currentChatId = null;
     let chats = JSON.parse(localStorage.getItem("myth_chats") || "{}");
 
-    function detectStaff() {
-        const name = document.getElementById("loginName").value.toLowerCase().trim();
-        const isStaff = !!staffDB[name];
-        document.getElementById("staff-pin-box").style.display = isStaff ? "block" : "none";
-        document.getElementById("user-pass-box").style.display = isStaff ? "none" : "block";
-    }
-
-    function executeLogin() {
-        const name = document.getElementById("loginName").value.toLowerCase().trim();
-        if (staffDB[name]) {
-            if (document.getElementById("staffPass").value === staffDB[name]) loginSuccess(name);
-            else alert("🔴 INVALID SECURITY KEY");
-        } else {
-            const email = document.getElementById("loginEmail").value;
-            if (email.includes("@")) loginSuccess(name || "Guest");
-            else alert("⚠️ VALID EMAIL REQUIRED");
-        }
-    }
+    window.onload = () => {
+        const savedName = localStorage.getItem('myth_session_name');
+        if(savedName) loginSuccess(savedName, true);
+        lucide.createIcons();
+    };
 
     function handleGoogle(response) {
         const payload = JSON.parse(atob(response.credential.split('.')[1]));
-        loginSuccess(payload.name);
+        loginSuccess(payload.name.toUpperCase());
     }
 
-    function loginSuccess(name) {
-        localStorage.setItem("myth_auth", "true");
-        localStorage.setItem("myth_name", name);
-        
-        document.getElementById("login-gate").style.display = "none";
-        const w = document.getElementById("welcome-overlay");
-        const wTitle = document.getElementById("welcome-text");
-        const wSub = document.getElementById("welcome-subtext");
-        
-        const lowName = name.toLowerCase().trim();
-        w.style.display = "flex";
-        
-        // --- 🛡️ FUZZY WELCOME LOGIC ---
-        if (lowName.includes('chethan')) {
-            wTitle.innerText = "FOUNDER MODE";
-            wSub.innerText = "CHEHTAN: FULL CLEARANCE GRANTED 👑";
-        } else if (lowName.includes('thaman')) {
-            wTitle.innerText = "ADMIN MODE";
-            wSub.innerText = "THAMAN: SYSTEM PRIVILEGES ACTIVE 🛡️";
-        } else if (lowName.includes('pavan')) {
-            wTitle.innerText = "MODERATOR MODE";
-            wSub.innerText = "PAVAN: ENFORCEMENT PROTOCOLS READY ⚔️";
-        } else {
-            wTitle.innerText = "WELCOME, " + name.toUpperCase();
-            wSub.innerText = "ESTABLISHING SECURE BRIDGE ☁️";
+    function verifyKey() {
+        const key = document.getElementById('security-key').value.trim();
+        const wrapper = document.getElementById('input-wrapper');
+        const feedback = document.getElementById('feedback');
+        if (AUTHORIZED_KEYS[key]) loginSuccess(AUTHORIZED_KEYS[key]);
+        else {
+            wrapper.classList.add('breach-alert');
+            feedback.classList.remove('hidden');
+            setTimeout(() => { wrapper.classList.remove('breach-alert'); feedback.classList.add('hidden'); }, 2000);
         }
-
-        setTimeout(() => {
-            w.style.opacity = "0";
-            setTimeout(() => { w.style.display = "none"; renderApp(); }, 500);
-        }, 2500);
     }
 
-    function renderApp() {
-        document.getElementById("app").style.display = "flex";
-        const rawName = localStorage.getItem("myth_name") || "Guest";
-        const cleanName = rawName.toLowerCase().trim();
-        
-        const dispName = document.getElementById("uName");
-        const dispTier = document.getElementById("uTier");
-        const avatar = document.getElementById("avatar");
+    function loginSuccess(name, isRefresh=false) {
+        localStorage.setItem('myth_session_name', name);
+        document.getElementById('login-gate').style.display = 'none';
+        if(!isRefresh) {
+            const w = document.getElementById("welcome-overlay");
+            w.style.display = "flex";
+            document.getElementById("welcome-text").innerText = name.includes("CHETHAN") ? "FOUNDER MODE" : "WELCOME, " + name;
+            setTimeout(() => { w.style.opacity = "0"; setTimeout(() => { w.style.display = "none"; launchApp(name); }, 500); }, 2500);
+        } else launchApp(name);
+    }
 
-        dispName.innerText = rawName.toUpperCase();
-        avatar.innerText = rawName.charAt(0).toUpperCase();
+    function launchApp(name) {
+        document.getElementById('app').classList.remove('hidden');
+        const lowName = name.toLowerCase().trim();
+        const uName = document.getElementById('uName');
+        const uTier = document.getElementById('uTier');
+        const avatar = document.getElementById('avatar');
 
-        // --- 🛡️ THE IMPROVED IDENTITY ENGINE ---
-        if (cleanName.includes("chethan")) {
-            dispTier.innerText = "FOUNDER";
-            dispTier.style.color = "#FFD700";
-            dispTier.style.textShadow = "0 0 10px rgba(255, 215, 0, 0.3)";
-        } else if (cleanName.includes("thaman")) {
-            dispTier.innerText = "ADMIN";
-            dispTier.style.color = "#00E5FF";
-        } else if (cleanName.includes("pavan")) {
-            dispTier.innerText = "MODERATOR";
-            dispTier.style.color = "#FF3D00";
+        uName.innerText = name;
+        avatar.innerText = name.charAt(0);
+
+        if (lowName.includes("chethan")) {
+            uTier.innerText = "FOUNDER CLEARANCE";
+            uTier.style.color = "#FFD700";
+            uTier.style.textShadow = "0 0 10px rgba(255, 215, 0, 0.3)";
+        } else if (lowName.includes("thaman") || lowName.includes("pavan")) {
+            uTier.innerText = "STAFF CLEARANCE";
+            uTier.style.color = "#00E5FF";
         } else {
-            dispTier.innerText = "BASIC TIER";
-            dispTier.style.color = "#666";
+            uTier.innerText = "BASIC CITIZEN";
+            uTier.style.color = "#666";
         }
 
         renderHistory();
-        const chatKeys = Object.keys(chats);
-        if (chatKeys.length > 0) loadChat(chatKeys[chatKeys.length - 1]);
+        const keys = Object.keys(chats);
+        if (keys.length > 0) loadChat(keys[keys.length - 1]);
         else newChat();
         lucide.createIcons();
     }
 
-    function logout() { localStorage.removeItem("myth_auth"); location.reload(); }
-
-    function newChat() {
-        currentChatId = "chat_" + Date.now();
-        chats[currentChatId] = [];
-        saveChats();
-        renderHistory();
-        document.getElementById("chat").innerHTML = `<div class="msg bot">🤖 Hello ${localStorage.getItem("myth_name")}, how can I assist you?</div>`;
-    }
-
-    function saveChats() { localStorage.setItem("myth_chats", JSON.stringify(chats)); }
+    function logout() { localStorage.clear(); location.reload(); }
 
     function renderHistory() {
         const container = document.getElementById("chat-history");
@@ -225,58 +190,100 @@
         Object.keys(chats).reverse().forEach(id => {
             const btn = document.createElement("button");
             btn.className = "history-btn" + (id === currentChatId ? " active-chat" : "");
-            btn.innerHTML = `<span>💬</span> ${chats[id][0]?.user?.slice(0, 20) || "New Chat"}`;
+            btn.innerHTML = `<i data-lucide="message-square" size="14"></i> ${chats[id][0]?.user?.slice(0, 18) || "New Chat"}...`;
             btn.onclick = () => loadChat(id);
             container.appendChild(btn);
         });
+        lucide.createIcons();
     }
 
     function loadChat(id) {
         currentChatId = id;
-        const c = document.getElementById("chat");
-        c.innerHTML = "";
-        chats[id].forEach(m => {
-            c.innerHTML += `<div class="msg user">${m.user} 👤</div>`;
-            c.innerHTML += `<div class="msg bot">🤖 ${m.bot}</div>`;
-        });
-        c.scrollTop = c.scrollHeight;
+        const box = document.getElementById("chat");
+        box.innerHTML = "";
+        chats[id].forEach(m => { addMsg(m.user, true, null); addMsg(m.bot, false, m.img); });
         renderHistory();
     }
 
-    async function sendMsg() {
-        const inp = document.getElementById("chat-input");
+    function newChat() {
+        currentChatId = "chat_" + Date.now();
+        chats[currentChatId] = [];
+        localStorage.setItem("myth_chats", JSON.stringify(chats));
+        renderHistory();
+        document.getElementById("chat").innerHTML = "";
+        addMsg(`Handshake complete. How shall we progress toward April 20, ${localStorage.getItem("myth_session_name")}?`, false);
+    }
+
+    function startNeuralProcess() {
+        const inp = document.getElementById('chat-input');
         const val = inp.value.trim(); if(!val) return;
-        const c = document.getElementById("chat");
-        const user = localStorage.getItem("myth_name") || "Guest";
-
-        if (!currentChatId) newChat();
-        c.innerHTML += `<div class="msg user">${val} 👤</div>`;
+        const isImg = ["image", "draw", "generate", "render", "pic", "photo", "lion", "tiger"].some(k => val.toLowerCase().includes(k));
+        addMsg(val, true);
         inp.value = "";
-        c.scrollTop = c.scrollHeight;
+        if (isImg) triggerVisual(val);
+        else triggerChat(val);
+    }
 
+    async function triggerChat(text) {
         try {
             const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                 method: "POST",
                 headers: { "Authorization": `Bearer ${GROQ_KEY}`, "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    model: "llama-3.3-70b-versatile", 
-                    messages: [
-                        {role: "system", content: `You are Mythical AI by U. Chethan. User: ${user}.`},
-                        {role: "user", content: val}
-                    ] 
-                })
+                body: JSON.stringify({ model: "llama-3.3-70b-versatile", messages: [{ role: "system", content: SYSTEM_PROMPT }, { role: "user", content: text }] })
             });
             const d = await r.json();
             const reply = d.choices[0].message.content;
-            c.innerHTML += `<div class="msg bot">🤖 ${reply}</div>`;
-            chats[currentChatId].push({ user: val, bot: reply });
-            saveChats();
+            addMsg(reply, false);
+            chats[currentChatId].push({ user: text, bot: reply });
+            localStorage.setItem("myth_chats", JSON.stringify(chats));
             renderHistory();
-        } catch(e) { c.innerHTML += `<div class="msg bot">⚠️ Connection error.</div>`; }
-        c.scrollTop = c.scrollHeight;
+        } catch(e) { addMsg("⚠️ Neural link timeout.", false); }
     }
 
-    window.onload = () => { if(localStorage.getItem("myth_auth")) renderApp(); lucide.createIcons(); };
+    function triggerVisual(p) {
+        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(p)}?width=1024&height=1024&nologo=true&model=flux&seed=${Math.floor(Math.random()*1000000)}`;
+        addMsg(`Materializing neural visual: "${p}"`, false, url);
+        chats[currentChatId].push({ user: p, bot: "Visual materialized.", img: url });
+        localStorage.setItem("myth_chats", JSON.stringify(chats));
+        renderHistory();
+    }
+
+    function addMsg(text, isUser, img = null) {
+        if(!text) return;
+        const box = document.getElementById('chat');
+        const div = document.createElement('div');
+        const mid = "msg_" + Math.random().toString(36).substr(2, 5);
+        div.id = mid;
+        div.className = `msg ${isUser ? 'user' : 'bot'}`;
+        div.innerHTML = `
+            <button class="trash-btn" onclick="this.parentElement.remove()"><i data-lucide="trash-2" size="14"></i></button>
+            <p>${text}</p>
+            ${img ? `
+                <div class="mt-6 rounded-2xl overflow-hidden border border-white/10 relative group bg-white/5 min-h-[300px] flex items-center justify-center">
+                    <div id="ld-${mid}" class="absolute flex flex-col items-center gap-2 z-0">
+                        <div class="w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full loader-spin"></div>
+                        <div class="text-[9px] font-bold text-purple-500 uppercase tracking-widest animate-pulse">Establishing Node...</div>
+                    </div>
+                    <img src="${img}" class="w-full relative z-10 opacity-0 transition-opacity duration-700" onload="document.getElementById('ld-${mid}').remove(); this.style.opacity='1';">
+                    <a href="${img}" target="_blank" download class="absolute top-4 right-4 z-20 bg-purple-600 text-white p-3 rounded-xl opacity-0 group-hover:opacity-100 transition-all shadow-xl">
+                        <i data-lucide="download" size="16"></i>
+                    </a>
+                </div>
+            ` : ''}`;
+        box.appendChild(div);
+        box.scrollTop = box.scrollHeight;
+        lucide.createIcons();
+
+        if(img) {
+            setTimeout(() => {
+                const loader = document.getElementById(`ld-${mid}`);
+                if(loader) {
+                    loader.innerHTML = `<div class="text-red-500 text-[9px] font-bold uppercase text-center">Node Busy.<br>Retrying...</div>`;
+                    div.querySelector('img').src = img + "&retry=" + Math.random();
+                }
+            }, 15000);
+        }
+    }
 </script>
 </body>
 </html>
