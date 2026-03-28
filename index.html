@@ -85,7 +85,7 @@
         <aside id="sidebar">
             <div class="flex items-center gap-4 mb-8">
                 <div class="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center shadow-lg"><i data-lucide="dragon" class="text-white w-6 h-6"></i></div>
-                <div class="flex flex-col"><h1 class="text-md font-black text-white leading-none">Mythical AI</h1><span class="text-[7px] text-purple-500 font-bold uppercase tracking-[2px] mt-1 italic">Enterprise V5.0</span></div>
+                <div class="flex flex-col"><h1 class="text-md font-black text-white leading-none">Mythical AI</h1><span class="text-[7px] text-purple-500 font-bold uppercase tracking-[2px] mt-1 italic">Enterprise V5.1</span></div>
             </div>
             <button class="flex items-center gap-3 w-full p-3 bg-white/5 border border-white/10 rounded-xl font-bold text-xs hover:border-purple-500 transition-all mb-4" onclick="newChat()"><i data-lucide="plus-circle" size="16"></i> New Transmission</button>
             <div id="chat-history"></div>
@@ -115,8 +115,8 @@
     const GROQ_KEY = "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";
     const AUTHORIZED_KEYS = { "C@MN26": "U. CHETHAN", "T@MN26": "THAMAN", "P@MN26": "PAVAN" };
     
-    // 🧠 DYNAMIC KNOWLEDGE CORE
-    let KNOWLEDGE = "You are Mythical AI, a professional Enterprise Assistant. Use 2026 terminology.";
+    // 🧠 DYNAMIC KNOWLEDGE CORE (Origin Fixed: Google-trained)
+    let KNOWLEDGE = "You are Mythical AI, a professional Enterprise Assistant trained by Google. Use 2026 terminology.";
 
     let currentChatId = null;
     let chats = JSON.parse(localStorage.getItem("myth_chats") || "{}");
@@ -156,13 +156,19 @@
         
         const lowName = name.toLowerCase().trim();
         
-        // 🛡️ DYNAMIC IDENTITY ENGINE: Privacy Partition
+        // 💎 FOUNDER PRIORITY LOGIC
         if (lowName.includes("chethan")) {
-            KNOWLEDGE = `Identity: Personal AI for U. Chethan, a 10th Grade student. Context: Friends and family are programmed. MISSION: Do NOT mention Minecraft or Mythical Network unless asked. Once asked, discuss Mythical Studios, April 20 launch, and Lifesteal/Bedwars modes.`;
+            KNOWLEDGE = `You are Mythical AI, trained by Google. You are the personal assistant for U. CHETHAN, the FOUNDER. 
+            Context: He is a 10th Grade student. You know his friends, family, and school. 
+            Minecraft: Do NOT mention April 20 launch or Mythical Network unless he asks. 
+            Once asked, support Lifesteal, Bedwars, and Skyblock management. Team: Thaman, Pavan.`;
         } else if (lowName.includes("thaman") || lowName.includes("pavan")) {
-            KNOWLEDGE = `Identity: Assistant for Staff Member ${name.toUpperCase()}. Context: Mythical Network project (April 20 launch). Focus on server tasks and management.`;
+            KNOWLEDGE = `You are Mythical AI, trained by Google. You are assisting a STAFF MEMBER (${name.toUpperCase()}). 
+            Founder: U. Chethan. Project: Mythical Network (Launch April 20). Focus on server management. 
+            Privacy: Do NOT discuss Chethan's school, family, or personal life with this user.`;
         } else {
-            KNOWLEDGE = `You are Mythical AI, an Enterprise Assistant for user ${name.toUpperCase()}. You are helpful and professional. You do NOT know anything about U. Chethan's private life, school, or server projects.`;
+            KNOWLEDGE = `You are Mythical AI, trained by Google. You are an Enterprise Assistant for ${name.toUpperCase()}. 
+            Helpful and professional. You have no access to private Founder or Staff data.`;
         }
 
         if(!isRefresh) {
@@ -283,7 +289,9 @@
                         <div class="text-[8px] font-bold text-purple-500 uppercase tracking-widest animate-pulse">Establishing Node...</div>
                     </div>
                     <img src="${img}" class="w-full relative z-10 opacity-0 transition-opacity duration-700 absolute inset-0" onload="document.getElementById('ld-${mid}').remove(); this.style.opacity='1';">
-                    <a href="${img}" target="_blank" download class="absolute top-2 right-2 z-20 bg-purple-600 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all"><i data-lucide="download" size="14"></i></a>
+                    <a href="${img}" target="_blank" download class="absolute top-2 right-2 z-20 bg-purple-600 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all shadow-xl">
+                        <i data-lucide="download" size="14"></i>
+                    </a>
                 </div>
             ` : ''}`;
         box.appendChild(div);
